@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { Db, Queryable } from '../db/index.js';
 import type { SessionUser } from '../auth/service.js';
 import { CHARGE_PACKS, findPack, type ChargePack } from '../domain/points.js';
+import { splitPrice } from '../domain/rules.js';
 import { PaymentError, type PointsPaymentProvider } from '../payments/provider.js';
 
 export class PointsError extends Error {
@@ -13,6 +14,8 @@ export interface PointsConfig {
   enabled: boolean;
   /** 決済後に戻すURL（BASE_URL を基点にする） */
   baseUrl: string;
+  /** 運営の手数料率（%）。投稿者への還元額の算出に使う */
+  feePercent: number;
 }
 
 export class PointsService {
@@ -102,7 +105,8 @@ export class PointsService {
 
   // ---------------- 消費（有料口コミの閲覧） ----------------
 
-  /** 有料口コミをポイントで解放する。価格はサーバーが口コミから決める */
+  /** 有料口コミをポイントで解放する。価格はサーバーが口コミから決める。
+   *  読者はポイントを消費し、投稿者には販売価格の90%が「円」残高（ledger_entries）に入る。 */
   async unlockReview(user: SessionUser, reviewId: string): Promise<{ unlockId: string; spentPt: number; balancePt: number }> {
     const review = (await this.db.query<{ author_id: string; price_yen: number | null; listing_kind: string; status: string }>(
       'SELECT author_id, price_yen, listing_kind, status FROM reviews WHERE id=$1', [reviewId],
@@ -112,6 +116,9 @@ export class PointsService {
     if (review.author_id === user.id) throw new PointsError(400, 'own_review', '自分の口コミは解放不要です');
 
     const costPt = review.price_yen; // 1pt = 1円相当で消費
+    // 投稿者の受け取り（円）。手数料率は購入系と同じ splitPrice を使う
+    const { authorNetYen } = splitPrice(review.price_yen, this.cfg.feePercent);
+    const authorId = review.author_id;
 
     return this.db.tx(async (q) => {
       // 同一ユーザーの並行解放を直列化し、残高チェックと消費を原子的に行う
@@ -121,6 +128,11 @@ export class PointsService {
       const existing = (await q.query<{ id: string }>('SELECT id FROM review_unlocks WHERE review_id=$1 AND user_id=$2', [reviewId, user.id])).rows[0];
       if (existing) {
         return { unlockId: existing.id, spentPt: 0, balancePt: await this.balanceOf(q, user.id) };
+      }
+      // 既に「円」で購入済みの口コミは、閲覧権があるのでポイント消費も投稿者への二重計上もしない
+      const boughtAlready = await q.query('SELECT 1 FROM purchases WHERE review_id=$1 AND buyer_id=$2 AND status=\'completed\'', [reviewId, user.id]);
+      if (boughtAlready.rowCount > 0) {
+        return { unlockId: '', spentPt: 0, balancePt: await this.balanceOf(q, user.id) };
       }
 
       const balance = await this.balanceOf(q, user.id);
@@ -133,7 +145,11 @@ export class PointsService {
         if ((e as { code?: string }).code === '23505') throw new PointsError(409, 'already_unlocked', 'すでに解放済みです');
         throw e;
       }
+      // 読者のポイントを消費
       await q.query(`INSERT INTO point_ledger (id,user_id,amount_pt,kind,ref_id) VALUES ($1,$2,$3,'spend',$4)`, [randomUUID(), user.id, -costPt, unlockId]);
+      // 投稿者へ「円」で還元（既存の残高・出金の仕組みをそのまま使う）。
+      // ref_id=unlockId・kind='sale' の一意制約で、同一解放の二重計上を防ぐ。
+      await q.query(`INSERT INTO ledger_entries (id,user_id,amount_yen,kind,ref_id) VALUES ($1,$2,$3,'sale',$4)`, [randomUUID(), authorId, authorNetYen, unlockId]);
       return { unlockId, spentPt: costPt, balancePt: balance - costPt };
     });
   }

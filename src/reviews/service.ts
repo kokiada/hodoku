@@ -159,8 +159,10 @@ export class ReviewService {
   async mine(user: SessionUser) {
     const rows = (await this.db.query<ReviewRow & { therapist_name: string; therapist_slug: string; shop_name: string; moderation_reason: string | null; sold_count: string; sold_net: string | null }>(
       `${REVIEW_SELECT.replace('FROM reviews r', `, th.name AS therapist_name, th.slug AS therapist_slug, s.name AS shop_name, r.moderation_reason,
-         (SELECT count(*) FROM purchases p WHERE p.review_id=r.id AND p.status='completed') AS sold_count,
-         (SELECT sum(p.author_net_yen) FROM purchases p WHERE p.review_id=r.id AND p.status='completed') AS sold_net FROM reviews r`)}
+         ((SELECT count(*) FROM purchases p WHERE p.review_id=r.id AND p.status='completed')
+          + (SELECT count(*) FROM review_unlocks ru WHERE ru.review_id=r.id)) AS sold_count,
+         (COALESCE((SELECT sum(p.author_net_yen) FROM purchases p WHERE p.review_id=r.id AND p.status='completed'),0)
+          + COALESCE((SELECT sum(le.amount_yen) FROM review_unlocks ru JOIN ledger_entries le ON le.ref_id=ru.id AND le.kind='sale' WHERE ru.review_id=r.id),0)) AS sold_net FROM reviews r`)}
        JOIN therapists th ON th.id=r.therapist_id JOIN shops s ON s.id=th.shop_id
        WHERE r.author_id=$1 ORDER BY r.created_at DESC`, [user.id],
     )).rows;

@@ -163,19 +163,34 @@ export class CommerceService {
   }
 
   async summary(user: SessionUser) {
-    const month = (await this.db.query<{ n: string; net: string | null; fee: string | null }>(
+    // 今月の売上（投稿者としての受け取り）。円購入(purchases)とポイント解放(review_unlocks)の両方を合算する。
+    const monthP = (await this.db.query<{ n: string; net: string | null; fee: string | null }>(
       `SELECT count(*) AS n, sum(p.author_net_yen) AS net, sum(p.fee_yen) AS fee
        FROM purchases p JOIN reviews r ON r.id=p.review_id
        WHERE r.author_id=$1 AND p.status='completed' AND p.created_at >= date_trunc('month', now())`, [user.id],
     )).rows[0]!;
-    const bought = (await this.db.query<{ n: string }>(`SELECT count(*) AS n FROM purchases WHERE buyer_id=$1 AND status='completed'`, [user.id])).rows[0]!;
+    // ポイント解放分の投稿者受け取りは、実際に記録された sale 元帳（ref_id=解放id）を合算する。
+    // 手数料率が将来変わっても、記録済みの金額とズレないようにするため再計算しない。
+    const monthU = (await this.db.query<{ n: string; gross: string | null; net: string | null }>(
+      `SELECT count(*) AS n, sum(r.price_yen) AS gross, sum(le.amount_yen) AS net
+       FROM review_unlocks ru
+       JOIN reviews r ON r.id=ru.review_id
+       JOIN ledger_entries le ON le.ref_id=ru.id AND le.kind='sale'
+       WHERE r.author_id=$1 AND ru.created_at >= date_trunc('month', now())`, [user.id],
+    )).rows[0]!;
+    const monthSalesCount = Number(monthP.n) + Number(monthU.n);
+    const monthNetYen = Number(monthP.net ?? 0) + Number(monthU.net ?? 0);
+    const monthFeeYen = Number(monthP.fee ?? 0) + (Number(monthU.gross ?? 0) - Number(monthU.net ?? 0));
+    // 「購入した口コミ」= 円購入 + ポイント解放
+    const boughtP = (await this.db.query<{ n: string }>(`SELECT count(*) AS n FROM purchases WHERE buyer_id=$1 AND status='completed'`, [user.id])).rows[0]!;
+    const boughtU = (await this.db.query<{ n: string }>(`SELECT count(*) AS n FROM review_unlocks WHERE user_id=$1`, [user.id])).rows[0]!;
     const open = (await this.db.query<{ id: string; amount_yen: number }>(`SELECT id,amount_yen FROM payout_requests WHERE user_id=$1 AND status='open'`, [user.id])).rows[0];
     const history = (await this.db.query<{ amount_yen: number; status: string; created_at: string }>(
       `SELECT amount_yen,status,created_at FROM payout_requests WHERE user_id=$1 AND status<>'open' ORDER BY created_at DESC LIMIT 10`, [user.id])).rows;
     return {
       balanceYen: await this.balanceOf(this.db, user.id),
-      monthSalesCount: Number(month.n), monthNetYen: Number(month.net ?? 0), monthFeeYen: Number(month.fee ?? 0),
-      boughtCount: Number(bought.n), minPayoutYen: this.cfg.minPayoutYen, feePercent: this.cfg.feePercent, payoutsEnabled: this.cfg.payoutsEnabled,
+      monthSalesCount, monthNetYen, monthFeeYen,
+      boughtCount: Number(boughtP.n) + Number(boughtU.n), minPayoutYen: this.cfg.minPayoutYen, feePercent: this.cfg.feePercent, payoutsEnabled: this.cfg.payoutsEnabled,
       openPayout: open ? { id: open.id, amountYen: open.amount_yen } : null,
       payoutHistory: history.map((h) => ({ amountYen: h.amount_yen, status: h.status, createdAt: h.created_at })),
     };

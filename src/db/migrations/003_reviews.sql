@@ -87,7 +87,7 @@ CREATE TABLE ledger_entries (
   user_id      uuid NOT NULL REFERENCES users(id),
   amount_yen   int NOT NULL,     -- 正=入金（販売の取り分）、負=出金・返金による差し引き
   kind         text NOT NULL CHECK (kind IN ('sale','refund_clawback','payout','payout_reversal')),
-  ref_id       uuid,             -- purchase_id または payout_request_id
+  ref_id       uuid,             -- purchase_id / payout_request_id / review_unlocks.id（kind と組で一意）
   created_at   timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX ledger_entries_user_idx ON ledger_entries (user_id);

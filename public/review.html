@@ -74,12 +74,24 @@ body.sent .done{display:block}
 @media (min-width:1024px){
   .submit{grid-template-columns:1fr auto}
 }
+.earn-note{margin-top:10px;font-size:13px;line-height:1.8;color:var(--sumi);background:var(--kinu);border:1px solid var(--suna);border-radius:12px;padding:12px 14px}
+.earn-note b{color:var(--suou)}
+.picker{margin-top:8px}
+.picker-lead{font-size:14px;color:var(--fuji-ink);margin-bottom:12px}
+.pick-search{width:100%;padding:11px 14px;border:1px solid var(--suna);border-radius:999px;font-size:14px;background:var(--washi);margin-bottom:14px}
+.pick-list{list-style:none;display:grid;gap:10px}
+.pick-list li a{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--suna);border-radius:14px;background:var(--washi);text-decoration:none;transition:border-color .12s}
+.pick-list li a:hover{border-color:var(--suou)}
+.pick-list .tex{flex:0 0 auto;width:44px;height:44px;border-radius:50%}
+.pick-list .nm{font:700 15px var(--serif)}
+.pick-list .sb{font-size:12px;color:var(--fuji-ink);margin-top:2px}
+.pick-list .cnt{margin-left:auto;font-size:12px;color:var(--fuji-ink);white-space:nowrap}
 </style>
 </head>
 <body>
 <header class="site-header">
   <a class="logo" href="index.html">Hodoku<small>ほどく</small></a>
-  <nav aria-label="メイン"><ul><li><a href="people.html" aria-current="page">人からさがす</a></li><li><a href="shops.html">店舗からさがす</a></li><li><a href="guide.html">ガイド</a></li><li><a href="account.html">マイページ</a></li><li><a href="login.html">ログイン</a></li></ul></nav>
+  <nav aria-label="メイン"><ul><li><a href="people.html">人からさがす</a></li><li><a href="shops.html">店舗からさがす</a></li><li><a href="review.html" aria-current="page">口コミを書く</a></li><li><a href="guide.html">ガイド</a></li><li><a href="account.html">マイページ</a></li><li><a href="login.html">ログイン</a></li></ul></nav>
   <button class="menu" aria-label="メニュー" type="button"><span></span></button>
 </header>
 
@@ -88,8 +100,17 @@ body.sent .done{display:block}
     <ol class="crumb"><li><a href="therapist.html" id="crumb-back">担当者の口コミ</a></li><li>口コミを書く</li></ol>
     <h1>口コミを書く</h1>
     <p class="target" id="target" style="margin-top:4px">担当者を読み込んでいます…</p>
-    <div class="progress"><span id="pg-t">0 / 7</span><span class="track" aria-hidden="true"><i id="pg"></i></span><span>選ぶだけ・約2分</span></div>
+    <p class="earn-note" id="earn-note" hidden>あなたの口コミは、有料で販売すると<b>読まれるたびに販売価格の90%</b>が受け取りになります。</p>
+    <div class="progress" id="progress"><span id="pg-t">0 / 7</span><span class="track" aria-hidden="true"><i id="pg"></i></span><span>選ぶだけ・約2分</span></div>
   </div>
+
+  <!-- slug が無いとき：誰について書くかを選ぶ -->
+  <section class="picker" id="picker" hidden aria-label="担当者をえらぶ">
+    <p class="picker-lead">どの担当者について書きますか？ 口コミは担当者ごとに投稿します。</p>
+    <input type="search" id="pick-kw" class="pick-search" placeholder="名前・お店・エリアで探す" aria-label="担当者を検索">
+    <ul class="pick-list" id="pick-list"></ul>
+    <p class="muted" id="pick-empty" hidden>見つかりませんでした。別のキーワードでお試しください。</p>
+  </section>
 
   <form id="rv" novalidate>
     <div class="q"><fieldset><legend>利用した時期<span class="req">必須</span></legend>
@@ -204,10 +225,36 @@ body.sent .done{display:block}
 <script>
 (() => {
   const slug = new URLSearchParams(location.search).get('slug');
-  if (!slug) { location.replace('shops.html'); return; }
   window.hodokuMe.then(u => { if (!u) location.replace('login.html?next=' + encodeURIComponent(location.pathname + location.search)); });
+
+  // slug が無いときは「誰について書くか」を選ばせる（店舗一覧に飛ばさない）
+  if (!slug) {
+    document.getElementById('rv').hidden = true;
+    document.getElementById('progress').hidden = true;
+    document.getElementById('target').textContent = 'まず、口コミを書く担当者をえらんでください。';
+    const picker = document.getElementById('picker'); picker.hidden = false;
+    const list = document.getElementById('pick-list'), kw = document.getElementById('pick-kw'), empty = document.getElementById('pick-empty');
+    const row = t => h('li', {},
+      h('a', {href: `review.html?slug=${encodeURIComponent(t.slug)}`},
+        h('span', {class: texClass(t.slug), role: 'img', 'aria-label': t.name + 'の質感'}),
+        h('span', {}, h('span', {class: 'nm', text: t.name}), h('span', {class: 'sb', text: `${t.shopName}・${t.area}`})),
+        h('span', {class: 'cnt', text: `口コミ${t.reviewCount}件`})));
+    const load = async () => {
+      const q = kw.value.trim();
+      try {
+        const res = await hodokuApi(`/therapists${q ? '?q=' + encodeURIComponent(q) : ''}`);
+        list.replaceChildren(...res.therapists.map(row));
+        empty.hidden = res.therapists.length > 0;
+      } catch (e) { showError(list, e); }
+    };
+    let timer; kw.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(load, 200); });
+    load();
+    return; // フォームの初期化はしない
+  }
+
+  document.getElementById('earn-note').hidden = false;
   hodokuApi(`/therapists/${encodeURIComponent(slug)}`).then(d => {
-    document.getElementById('target').textContent = `${d.therapist.name}・${d.therapist.shopName}`;
+    document.getElementById('target').textContent = `${d.therapist.name}・${d.therapist.shopName} について書く`;
     document.getElementById('crumb-back').textContent = `${d.therapist.name} の口コミ`;
     document.getElementById('crumb-back').href = `therapist.html?slug=${encodeURIComponent(slug)}`;
     document.getElementById('done-back').href = `therapist.html?slug=${encodeURIComponent(slug)}`;

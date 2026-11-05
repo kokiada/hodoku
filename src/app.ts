@@ -82,7 +82,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   const commerce = new CommerceService(db, payments, {
     feePercent: config.PLATFORM_FEE_PERCENT, minPayoutYen: config.MIN_PAYOUT_YEN, refundWindowHours: config.REFUND_WINDOW_HOURS, payoutsEnabled: config.payoutsEnabled,
   });
-  const points = new PointsService(db, pointsProvider, { enabled: config.pointsProvider !== 'disabled', baseUrl: config.BASE_URL });
+  const points = new PointsService(db, pointsProvider, { enabled: config.pointsProvider !== 'disabled', baseUrl: config.BASE_URL, feePercent: config.PLATFORM_FEE_PERCENT });
   app.decorate('deps', { config, db, mailer, auth, catalog, reviews, commerce, points });
 
   app.addHook('onRequest', async (req, reply) => {
