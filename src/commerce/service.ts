@@ -2,13 +2,18 @@ import { randomUUID } from 'node:crypto';
 import type { Db, Queryable } from '../db/index.js';
 import type { SessionUser } from '../auth/service.js';
 import { splitPrice } from '../domain/rules.js';
+import { encryptSecret, decryptSecret } from '../lib/crypto.js';
 import { PaymentError, type PaymentProvider } from '../payments/provider.js';
 
 export class CommerceError extends Error {
   constructor(public status: number, public code: string, message: string) { super(message); }
 }
 
-export interface CommerceConfig { feePercent: number; minPayoutYen: number; refundWindowHours: number; payoutsEnabled: boolean }
+export interface CommerceConfig { feePercent: number; minPayoutYen: number; refundWindowHours: number; payoutsEnabled: boolean; encryptionSecret: string }
+
+export interface BankAccountInput {
+  bankName: string; branchName: string; accountType: 'ordinary' | 'checking'; accountNumber: string; accountHolderKana: string;
+}
 
 export class CommerceService {
   constructor(private db: Db, private payments: PaymentProvider, private cfg: CommerceConfig) {}
@@ -199,6 +204,9 @@ export class CommerceService {
   /** 残高の全額を出金申請する。申請と同時に残高から引き当て、二重出金を防ぐ */
   async requestPayout(user: SessionUser): Promise<{ id: string; amountYen: number }> {
     if (!this.cfg.payoutsEnabled) throw new CommerceError(503, 'payouts_disabled', '出金の受付は準備中です');
+    // 振込先が未登録なら出金できない
+    const bank = await this.getBankAccount(user.id);
+    if (!bank) throw new CommerceError(400, 'bank_required', '先に振込先の口座を登録してください');
     return this.db.tx(async (q) => {
       // 同一ユーザーの並行申請を直列化
       await q.query('SELECT id FROM users WHERE id=$1 FOR UPDATE', [user.id]);
@@ -207,8 +215,10 @@ export class CommerceService {
         throw new CommerceError(400, 'below_minimum', `出金できるのは残高が${this.cfg.minPayoutYen.toLocaleString('ja-JP')}円以上のときです`);
       }
       const id = randomUUID();
+      // 処理時点の振込先スナップショット（口座番号は下4桁のみ）を残す
+      const snapshot = { bankName: bank.bankName, branchName: bank.branchName, accountType: bank.accountType, accountLast4: bank.accountLast4, accountHolderKana: bank.accountHolderKana };
       try {
-        await q.query('INSERT INTO payout_requests (id,user_id,amount_yen) VALUES ($1,$2,$3)', [id, user.id, balance]);
+        await q.query('INSERT INTO payout_requests (id,user_id,amount_yen,bank_snapshot) VALUES ($1,$2,$3,$4)', [id, user.id, balance, JSON.stringify(snapshot)]);
       } catch (e) {
         if ((e as { code?: string }).code === '23505') throw new CommerceError(409, 'already_requested', 'すでに出金を申請しています');
         throw e;
@@ -218,20 +228,59 @@ export class CommerceService {
     });
   }
 
-  async payoutQueue() {
-    const rows = (await this.db.query<{ id: string; amount_yen: number; created_at: string; nickname: string; email: string }>(
-      `SELECT pr.id, pr.amount_yen, pr.created_at, u.nickname, u.email FROM payout_requests pr JOIN users u ON u.id=pr.user_id WHERE pr.status='open' ORDER BY pr.created_at`,
-    )).rows;
-    return rows.map((r) => ({ id: r.id, amountYen: r.amount_yen, createdAt: r.created_at, nickname: r.nickname, email: r.email }));
+  // ---------------- 振込先の銀行口座 ----------------
+
+  /** 自分の振込先（表示用。口座番号は下4桁のみ） */
+  async getBankAccount(userId: string): Promise<null | { bankName: string; branchName: string; accountType: 'ordinary' | 'checking'; accountLast4: string; accountHolderKana: string }> {
+    const r = (await this.db.query<{ bank_name: string; branch_name: string; account_type: 'ordinary' | 'checking'; account_last4: string; account_holder_kana: string }>(
+      'SELECT bank_name, branch_name, account_type, account_last4, account_holder_kana FROM bank_accounts WHERE user_id=$1', [userId])).rows[0];
+    if (!r) return null;
+    return { bankName: r.bank_name, branchName: r.branch_name, accountType: r.account_type, accountLast4: r.account_last4, accountHolderKana: r.account_holder_kana };
   }
 
-  /** 出金を実行済み(paid)にするか、却下(denied)して残高に戻す */
-  async decidePayout(admin: SessionUser, requestId: string, decision: 'paid' | 'denied'): Promise<{ status: string }> {
+  /** 振込先を登録・更新する。口座番号は暗号化して保存し、下4桁だけ表示用に残す */
+  async saveBankAccount(user: SessionUser, input: BankAccountInput): Promise<{ ok: true }> {
+    const num = input.accountNumber.replace(/[\s-]/g, '');
+    if (!/^\d{4,10}$/.test(num)) throw new CommerceError(400, 'invalid_account_number', '口座番号は数字4〜10桁で入力してください');
+    if (!input.bankName.trim() || !input.branchName.trim()) throw new CommerceError(400, 'invalid_bank', '銀行名・支店名を入力してください');
+    if (!/^[ｦ-ﾟ\u30A0-\u30FF\u3000-\u303F A-Za-z0-9ー（）()]+$/.test(input.accountHolderKana.trim())) {
+      throw new CommerceError(400, 'invalid_holder', '口座名義はカナで入力してください');
+    }
+    const enc = encryptSecret(this.cfg.encryptionSecret, num);
+    const last4 = num.slice(-4);
+    await this.db.query(
+      `INSERT INTO bank_accounts (user_id,bank_name,branch_name,account_type,account_number_enc,account_last4,account_holder_kana)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)
+       ON CONFLICT (user_id) DO UPDATE SET bank_name=$2, branch_name=$3, account_type=$4, account_number_enc=$5, account_last4=$6, account_holder_kana=$7, updated_at=now()`,
+      [user.id, input.bankName.trim(), input.branchName.trim(), input.accountType, enc, last4, input.accountHolderKana.trim()],
+    );
+    return { ok: true };
+  }
+
+  /** 管理者が振込を実行するための、口座番号を含む全情報（復号）。監査ログに閲覧を記録すること */
+  async revealBankAccountForPayout(payoutId: string): Promise<null | { bankName: string; branchName: string; accountType: string; accountNumber: string; accountHolderKana: string }> {
+    const pr = (await this.db.query<{ user_id: string }>('SELECT user_id FROM payout_requests WHERE id=$1', [payoutId])).rows[0];
+    if (!pr) return null;
+    const r = (await this.db.query<{ bank_name: string; branch_name: string; account_type: string; account_number_enc: string; account_holder_kana: string }>(
+      'SELECT bank_name, branch_name, account_type, account_number_enc, account_holder_kana FROM bank_accounts WHERE user_id=$1', [pr.user_id])).rows[0];
+    if (!r) return null;
+    return { bankName: r.bank_name, branchName: r.branch_name, accountType: r.account_type, accountNumber: decryptSecret(this.cfg.encryptionSecret, r.account_number_enc), accountHolderKana: r.account_holder_kana };
+  }
+
+  async payoutQueue() {
+    const rows = (await this.db.query<{ id: string; amount_yen: number; created_at: string; nickname: string; email: string; bank_snapshot: unknown }>(
+      `SELECT pr.id, pr.amount_yen, pr.created_at, u.nickname, u.email, pr.bank_snapshot FROM payout_requests pr JOIN users u ON u.id=pr.user_id WHERE pr.status='open' ORDER BY pr.created_at`,
+    )).rows;
+    return rows.map((r) => ({ id: r.id, amountYen: r.amount_yen, createdAt: r.created_at, nickname: r.nickname, email: r.email, bank: r.bank_snapshot ?? null }));
+  }
+
+  /** 出金を実行済み(paid)にするか、却下(denied)して残高に戻す。paid時は振込メモを残せる */
+  async decidePayout(admin: SessionUser, requestId: string, decision: 'paid' | 'denied', paidNote?: string): Promise<{ status: string }> {
     return this.db.tx(async (q) => {
       const pr = (await q.query<{ user_id: string; amount_yen: number; status: string }>('SELECT user_id,amount_yen,status FROM payout_requests WHERE id=$1 FOR UPDATE', [requestId])).rows[0];
       if (!pr) throw new CommerceError(404, 'not_found', '申請が見つかりません');
       if (pr.status !== 'open') throw new CommerceError(409, 'already_decided', 'この申請はすでに処理済みです');
-      await q.query('UPDATE payout_requests SET status=$2, decided_by=$3, decided_at=now() WHERE id=$1', [requestId, decision, admin.id]);
+      await q.query('UPDATE payout_requests SET status=$2, decided_by=$3, decided_at=now(), paid_note=$4 WHERE id=$1', [requestId, decision, admin.id, decision === 'paid' ? (paidNote?.trim().slice(0, 300) ?? null) : null]);
       if (decision === 'denied') {
         await q.query(`INSERT INTO ledger_entries (id,user_id,amount_yen,kind,ref_id) VALUES ($1,$2,$3,'payout_reversal',$4)`, [randomUUID(), pr.user_id, pr.amount_yen, requestId]);
       }

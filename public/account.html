@@ -101,15 +101,28 @@
   <section class="panel" id="p-bought" role="tabpanel" aria-labelledby="t-bought" hidden></section>
 
   <section class="panel" id="p-payout" role="tabpanel" aria-labelledby="t-payout" hidden>
-    <h2 class="h2">出金の申請</h2>
+    <h2 class="h2">振込先の口座</h2>
+    <p style="font-size:13px;color:var(--fuji-ink);margin-top:6px">受け取った売上は、登録した銀行口座へ振り込みます。口座番号は暗号化して保管し、画面には下4桁のみ表示します。</p>
+    <form class="bank-form" id="bank-form" style="display:grid;gap:14px;margin-top:14px;max-width:460px">
+      <div><label class="field-l" for="bk-name">銀行名</label><input class="input" id="bk-name" required placeholder="例：みずほ銀行"></div>
+      <div><label class="field-l" for="bk-branch">支店名</label><input class="input" id="bk-branch" required placeholder="例：渋谷支店"></div>
+      <div><label class="field-l" for="bk-type">口座種別</label><select class="select" id="bk-type"><option value="ordinary">普通</option><option value="checking">当座</option></select></div>
+      <div><label class="field-l" for="bk-num">口座番号</label><input class="input" id="bk-num" inputmode="numeric" required placeholder="数字のみ" aria-describedby="bk-num-cur"><p class="help" id="bk-num-cur"></p></div>
+      <div><label class="field-l" for="bk-kana">口座名義（カナ）</label><input class="input" id="bk-kana" required placeholder="ヤマダ ハナコ"></div>
+      <p class="err" id="bk-err" role="alert" hidden></p>
+      <button class="btn primary" type="submit" id="bk-submit">振込先を保存する</button>
+    </form>
+
+    <h2 class="h2" style="margin-top:32px">出金の申請</h2>
     <p style="font-size:13px;color:var(--fuji-ink);margin-top:6px" id="payout-note">受け取り残高から、登録した口座へ出金します。</p>
     <form class="payout-form" id="payout-form">
       <div class="row"><span>受け取り残高</span><span class="v" id="po-balance">—</span></div>
+      <div class="row"><span>振込先</span><span class="v" id="po-bank">未登録</span></div>
       <div class="row sum"><span>出金額（全額）</span><b id="po-amount">—</b></div>
       <button class="btn primary block" type="submit" style="margin-top:18px" id="po-submit">この内容で出金を申請</button>
     </form>
     <ul class="history" id="payout-history"></ul>
-    <div class="memo legal" style="margin-top:24px;max-width:520px"><b>要確認（税理士・弁護士）</b>投稿者への支払いにあたっての本人確認・口座登録・税区分（源泉・インボイス）。売り手に支払いが発生するため、閲覧のみの会員より本人確認が重くなる可能性。</div>
+    <div class="memo legal" style="margin-top:24px;max-width:520px"><b>要確認（税理士・弁護士）</b>投稿者への支払いにあたっての本人確認（KYC）・税区分（源泉・インボイス）。出金の受付開始前に専門家の確認が必要です。</div>
   </section>
 </main>
 
@@ -197,7 +210,7 @@
     if (!me) { location.replace('login.html?next=' + encodeURIComponent('/account')); return; }
     $('who').textContent = `${me.nickname} さん`;
     try {
-      const [sum, rv, pu] = await Promise.all([hodokuApi('/me/summary'), hodokuApi('/me/reviews'), hodokuApi('/me/purchases')]);
+      const [sum, rv, pu, bankRes] = await Promise.all([hodokuApi('/me/summary'), hodokuApi('/me/reviews'), hodokuApi('/me/purchases'), hodokuApi('/me/bank-account')]);
 
       $('s-balance').textContent = yen(sum.balanceYen);
       $('s-balance-sub').textContent = `手数料${sum.feePercent}%を引いたあとの金額です`;
@@ -205,21 +218,47 @@
       $('s-month-sub').textContent = `${sum.monthSalesCount}件販売・手数料 −${yen(sum.monthFeeYen)}`;
       $('s-bought').textContent = `${sum.boughtCount}件`;
 
-      $('p-sold').replaceChildren(...(rv.reviews.length ? rv.reviews.map(soldItem) : [empty('まだ口コミを書いていません。', 'shops.html', '店舗をさがす')]));
+      $('p-sold').replaceChildren(...(rv.reviews.length ? rv.reviews.map(soldItem) : [empty('まだ口コミを書いていません。', 'people.html', '人からさがす')]));
       $('p-bought').replaceChildren(...(pu.purchases.length ? pu.purchases.map(boughtItem) : [empty('購入した口コミはまだありません。')]));
 
-      const canPay = sum.payoutsEnabled && sum.balanceYen >= sum.minPayoutYen && !sum.openPayout;
+      // 振込先の反映
+      const bank = bankRes.bankAccount;
+      if (bank) {
+        $('bk-name').value = bank.bankName; $('bk-branch').value = bank.branchName;
+        $('bk-type').value = bank.accountType; $('bk-kana').value = bank.accountHolderKana;
+        $('bk-num').value = ''; $('bk-num-cur').textContent = `登録済み：下4桁 ****${bank.accountLast4}（変更する場合のみ入力）`;
+        $('po-bank').textContent = `${bank.bankName} ${bank.branchName}（****${bank.accountLast4}）`;
+      } else {
+        $('po-bank').textContent = '未登録';
+      }
+
+      const canPay = sum.payoutsEnabled && sum.balanceYen >= sum.minPayoutYen && !sum.openPayout && !!bank;
       $('po-balance').textContent = yen(sum.balanceYen);
       $('po-amount').textContent = yen(Math.max(sum.balanceYen, 0));
       $('po-submit').disabled = !canPay;
       $('toPayout').disabled = !sum.payoutsEnabled;
       $('payout-note').textContent = !sum.payoutsEnabled ? '出金の受付は準備中です。残高は保管され、受付開始後に出金できます。'
         : sum.openPayout ? `${yen(sum.openPayout.amountYen)} の出金を申請中です。運営の確認後に振り込みます。`
+        : !bank ? 'まず上の「振込先の口座」を登録してください。'
         : `受け取り残高を出金します。${yen(sum.minPayoutYen)}以上で申請できます。`;
       const label = {paid: '出金', denied: '却下'};
       $('payout-history').replaceChildren(...sum.payoutHistory.map(x => h('li', {}, h('span', {text: `${ymd(x.createdAt)} ${label[x.status] ?? x.status}`}), h('span', {class: 'v', text: yen(x.amountYen)}))));
     } catch (e) { showError($('p-sold'), e); }
   }
+
+  $('bank-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const err = $('bk-err'); err.hidden = true;
+    const btn = $('bk-submit'); btn.disabled = true; btn.textContent = '保存しています…';
+    try {
+      await hodokuApi('/me/bank-account', {method: 'PUT', body: {
+        bankName: $('bk-name').value.trim(), branchName: $('bk-branch').value.trim(),
+        accountType: $('bk-type').value, accountNumber: $('bk-num').value.trim(), accountHolderKana: $('bk-kana').value.trim(),
+      }});
+      hodokuToast('振込先を保存しました'); await load();
+    } catch (ex) { err.hidden = false; err.textContent = ex.message || '保存できませんでした'; }
+    finally { btn.disabled = false; btn.textContent = '振込先を保存する'; }
+  });
 
   $('payout-form').addEventListener('submit', async e => {
     e.preventDefault();

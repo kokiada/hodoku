@@ -138,9 +138,22 @@ kbd{font:11px var(--sans);border:1px solid var(--suna);border-radius:4px;padding
     payouts: {
       title: '出金申請', path: '/payouts', empty: '出金申請はありません', cols: ['申請者', '金額', '申請日'],
       row: r => [h('td', {}, r.nickname, h('span', {class: 'id', text: r.email})), h('td', {text: yen(r.amountYen)}), h('td', {text: ymd(r.createdAt)})],
-      detail: r => detailBox('出金申請', [['申請者', r.nickname], ['メール', r.email], ['金額', yen(r.amountYen)]], null, [
-        btn('支払済みにする', 'primary', () => { if (confirm(`${r.nickname} さんへ ${yen(r.amountYen)} を振り込んだ後に押してください。よろしいですか？`)) decide(`/payouts/${r.id}/decide`, {decision: 'paid'}, '支払済みにしました'); }),
-        btn('却下（残高に戻す）', 'quiet', () => decide(`/payouts/${r.id}/decide`, {decision: 'denied'}, '却下しました'))]),
+      detail: r => {
+        const bank = r.bank || {};
+        const typeLabel = {ordinary: '普通', checking: '当座'};
+        const rows = [['申請者', r.nickname], ['メール', r.email], ['金額', yen(r.amountYen)],
+          ['銀行', bank.bankName ? `${bank.bankName} ${bank.branchName}` : '未登録'],
+          ['種別・名義', bank.bankName ? `${typeLabel[bank.accountType] ?? bank.accountType}・${bank.accountHolderKana}` : '—'],
+          ['口座番号', bank.accountLast4 ? `****${bank.accountLast4}` : '—']];
+        return detailBox('出金申請', rows, null, [
+          btn('口座番号を表示', 'quiet', async e => {
+            try { const res = await hodokuApi(`/admin/payouts/${r.id}/bank`); const b = res.bank;
+              e.currentTarget.replaceWith(h('p', {class: 'reveal', text: `口座番号：${b.accountNumber}（${b.bankName} ${b.branchName}・${typeLabel[b.accountType] ?? b.accountType}・${b.accountHolderKana}）`})); }
+            catch (err) { hodokuToast(err.message); }
+          }),
+          btn('支払済みにする', 'primary', () => { if (confirm(`${r.nickname} さんへ ${yen(r.amountYen)} を振り込んだ後に押してください。よろしいですか？`)) { const note = prompt('振込メモ（任意：振込日や参照番号）') ?? ''; decide(`/payouts/${r.id}/decide`, {decision: 'paid', paidNote: note}, '支払済みにしました'); } }),
+          btn('却下（残高に戻す）', 'quiet', () => decide(`/payouts/${r.id}/decide`, {decision: 'denied'}, '却下しました'))]);
+      },
     },
     reports: {
       title: '通報', path: '/reports', empty: '通報はありません', cols: ['内容', '通報者', '投稿者', '通報日'],

@@ -219,32 +219,49 @@ describe('返金', () => {
 });
 
 describe('出金', () => {
+  async function earn(uid: string, yen: number) {
+    await ctx.db.query(`INSERT INTO ledger_entries (id,user_id,amount_yen,kind,ref_id) VALUES ($1,$2,$3,'sale',$4)`, [randomUUID(), uid, yen, randomUUID()]);
+  }
+  async function setBank(c: InstanceType<typeof Client>) {
+    const res = await c.send('PUT', '/api/me/bank-account', { bankName: 'みずほ銀行', branchName: '渋谷支店', accountType: 'ordinary', accountNumber: '1234567', accountHolderKana: 'ﾔﾏﾀﾞ ﾊﾅｺ' });
+    if (res.statusCode !== 200) throw new Error('bank setup failed: ' + res.body);
+  }
+
+  it('振込先が未登録だと出金できない', async () => {
+    const u = await newUser('nobank');
+    await earn(u.id, 2700);
+    const c = await login(u.email);
+    const res = await c.post('/api/me/payouts', {});
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error).toBe('bank_required');
+  });
+
   it('残高が最低額未満だと申請できない', async () => {
     const u = await newUser('poor');
     const c = await login(u.email);
+    await setBank(c);
     const res = await c.post('/api/me/payouts', {});
     expect(res.statusCode).toBe(400);
     expect(res.json().error).toBe('below_minimum');
   });
 
-  async function earn(uid: string, yen: number) {
-    await ctx.db.query(`INSERT INTO ledger_entries (id,user_id,amount_yen,kind,ref_id) VALUES ($1,$2,$3,'sale',$4)`, [randomUUID(), uid, yen, randomUUID()]);
-  }
-
   it('申請すると残高が引き当てられ、並行・二重申請はできない', async () => {
     const u = await newUser('earner1');
     await earn(u.id, 2700);
     const c = await login(u.email);
+    await setBank(c);
     const [a, b] = await Promise.all([c.post('/api/me/payouts', {}), c.post('/api/me/payouts', {})]);
     expect([a.statusCode, b.statusCode].sort()).toEqual([201, 400]);
     expect(await balance(u.id)).toBe(0);
     expect((await ctx.db.query('SELECT 1 FROM payout_requests WHERE user_id=$1', [u.id])).rowCount).toBe(1);
   });
 
-  it('管理者が支払済みにする。モデレーターは出金を扱えない', async () => {
+  it('管理者が支払済みにする。モデレーターは出金を扱えない。口座情報と振込メモを扱える', async () => {
     const u = await newUser('earner2');
     await earn(u.id, 1500);
-    await (await login(u.email)).post('/api/me/payouts', {});
+    const seller = await login(u.email);
+    await setBank(seller);
+    await seller.post('/api/me/payouts', {});
 
     const mod = await login('mod-r1@example.com');
     expect((await mod.get('/api/admin/payouts')).statusCode).toBe(403);
@@ -253,8 +270,15 @@ describe('出金', () => {
     const admin = await login('admin-p@example.com');
     const item = (await admin.get('/api/admin/payouts')).json().items.find((i: { nickname: string }) => i.nickname === 'earner2');
     expect(item.amountYen).toBe(1500);
+    // 申請には振込先スナップショット（下4桁のみ）が含まれる
+    expect(item.bank).toMatchObject({ bankName: 'みずほ銀行', accountLast4: '4567' });
+    // 口座番号の全桁は admin の開示APIでのみ取得でき、監査ログに残る
+    const reveal = (await admin.get(`/api/admin/payouts/${item.id}/bank`)).json().bank;
+    expect(reveal.accountNumber).toBe('1234567');
+    expect((await ctx.db.query(`SELECT 1 FROM audit_log WHERE action='payout.bank_reveal'`)).rowCount).toBeGreaterThan(0);
+    // モデレーターは不可
     expect((await mod.post(`/api/admin/payouts/${item.id}/decide`, { decision: 'paid' })).statusCode).toBe(403);
-    expect((await admin.post(`/api/admin/payouts/${item.id}/decide`, { decision: 'paid' })).json()).toEqual({ status: 'paid' });
+    expect((await admin.post(`/api/admin/payouts/${item.id}/decide`, { decision: 'paid', paidNote: '振込済 11/5' })).json()).toEqual({ status: 'paid' });
     expect(await balance(u.id)).toBe(0);
     expect((await admin.post(`/api/admin/payouts/${item.id}/decide`, { decision: 'paid' })).statusCode).toBe(409);
   });
@@ -262,7 +286,9 @@ describe('出金', () => {
   it('却下すると残高に戻る', async () => {
     const u = await newUser('earner3');
     await earn(u.id, 1200);
-    await (await login(u.email)).post('/api/me/payouts', {});
+    const seller = await login(u.email);
+    await setBank(seller);
+    await seller.post('/api/me/payouts', {});
     expect(await balance(u.id)).toBe(0);
     const admin = await login('admin-p@example.com');
     const item = (await admin.get('/api/admin/payouts')).json().items.find((i: { nickname: string }) => i.nickname === 'earner3');
@@ -294,7 +320,32 @@ describe('出金', () => {
     const u = await newUser('negative');
     await earn(u.id, -270);
     const c = await login(u.email);
+    await setBank(c);
     expect((await c.post('/api/me/payouts', {})).json().error).toBe('below_minimum');
+  });
+
+  it('振込先は本人が登録でき、口座番号は暗号化保存・表示は下4桁のみ', async () => {
+    const u = await newUser('bankuser');
+    const c = await login(u.email);
+    expect((await c.get('/api/me/bank-account')).json().bankAccount).toBeNull();
+    const save = await c.send('PUT', '/api/me/bank-account', { bankName: '三井住友銀行', branchName: '恵比寿支店', accountType: 'ordinary', accountNumber: '9876543', accountHolderKana: 'ﾔﾏﾀﾞ ﾊﾅｺ' });
+    expect(save.statusCode).toBe(200);
+    // 取得は下4桁のみ
+    const got = (await c.get('/api/me/bank-account')).json().bankAccount;
+    expect(got).toMatchObject({ bankName: '三井住友銀行', accountLast4: '6543' });
+    expect(JSON.stringify(got)).not.toContain('9876543'); // 全桁は返らない
+    // DBには平文で保存されていない
+    const row = (await ctx.db.query<{ account_number_enc: string; account_last4: string }>('SELECT account_number_enc, account_last4 FROM bank_accounts WHERE user_id=$1', [u.id])).rows[0]!;
+    expect(row.account_number_enc).not.toContain('9876543');
+    expect(row.account_number_enc.startsWith('v1.')).toBe(true);
+    expect(row.account_last4).toBe('6543');
+  });
+
+  it('口座番号の形式が不正なら登録できない', async () => {
+    const u = await newUser('badbank');
+    const c = await login(u.email);
+    const res = await c.send('PUT', '/api/me/bank-account', { bankName: 'A銀行', branchName: 'B支店', accountType: 'ordinary', accountNumber: 'abc', accountHolderKana: 'ｶﾅ' });
+    expect(res.statusCode).toBe(400);
   });
 });
 

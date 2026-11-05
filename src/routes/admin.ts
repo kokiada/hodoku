@@ -42,11 +42,20 @@ export async function registerAdminRoutes(app: FastifyInstance) {
     if (!(await requireStaff(req, reply, ['admin']))) return;
     return { items: await commerce.payoutQueue() };
   });
+  // 振込実行のため口座番号を含む全情報を開示する（admin のみ・閲覧を監査ログに記録）
+  app.get('/payouts/:id/bank', async (req, reply) => {
+    const admin = await requireStaff(req, reply, ['admin']); if (!admin) return;
+    const { id } = uuid.parse(req.params);
+    const bank = await commerce.revealBankAccountForPayout(id);
+    if (!bank) return reply.code(404).send({ error: 'not_found', message: '振込先が見つかりません' });
+    await app.deps.db.query(`INSERT INTO audit_log (actor_id,action,target) VALUES ($1,'payout.bank_reveal',$2)`, [admin.id, id]);
+    return { bank };
+  });
   app.post('/payouts/:id/decide', async (req, reply) => {
     const admin = await requireStaff(req, reply, ['admin']); if (!admin) return;
     const { id } = uuid.parse(req.params);
-    const { decision } = z.object({ decision: z.enum(['paid', 'denied']) }).parse(req.body);
-    return commerce.decidePayout(admin, id, decision);
+    const { decision, paidNote } = z.object({ decision: z.enum(['paid', 'denied']), paidNote: z.string().max(300).optional() }).parse(req.body);
+    return commerce.decidePayout(admin, id, decision, paidNote);
   });
 
   app.get('/reports', async (req, reply) => {
