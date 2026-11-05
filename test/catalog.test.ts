@@ -48,6 +48,35 @@ describe('店舗一覧・検索', () => {
   });
 });
 
+describe('人からさがす（担当者一覧）', () => {
+  it('公開中の担当者を店舗横断で返す。口コミ数・信頼度・店舗情報が付く', async () => {
+    const list = (await new Client(ctx.app).get('/api/therapists')).json().therapists as Array<{ slug: string; name: string; shopName: string; station: string; reviewCount: number; trust: string }>;
+    expect(list.length).toBeGreaterThan(0);
+    const kai = list.find((t) => t.slug === 'kai');
+    expect(kai).toBeTruthy();
+    expect(kai!.shopName).toBeTruthy();
+    expect(typeof kai!.reviewCount).toBe('number');
+    expect(['high', 'mid', 'low']).toContain(kai!.trust);
+  });
+
+  it('口コミが多い順（話題）で並ぶ', async () => {
+    const list = (await new Client(ctx.app).get('/api/therapists?sort=reviews')).json().therapists as Array<{ reviewCount: number }>;
+    const counts = list.map((t) => t.reviewCount);
+    expect(counts).toEqual([...counts].sort((a, b) => b - a));
+  });
+
+  it('駅・キーワードで絞り込める', async () => {
+    const c = new Client(ctx.app);
+    const all = (await c.get('/api/therapists')).json().therapists as Array<{ station: string }>;
+    const station = all[0]!.station;
+    const byStation = (await c.get(`/api/therapists?station=${encodeURIComponent(station)}`)).json().therapists as Array<{ station: string }>;
+    expect(byStation.every((t) => t.station === station)).toBe(true);
+    // 一致しないキーワードは0件
+    const none = (await c.get('/api/therapists?q=存在しないキーワードxyz')).json().therapists;
+    expect(none.length).toBe(0);
+  });
+});
+
 describe('口コミ投稿と担当者ページ', () => {
   const freeBody = {
     therapistSlug: 'kai', visitedWhen: 'this_month', courseMinutes: 90, ngPrecheck: 'on_booking', totalMatched: 'matched',

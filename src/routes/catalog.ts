@@ -31,6 +31,19 @@ export async function registerCatalogRoutes(app: FastifyInstance) {
     return { shop };
   });
 
+  // 人（担当者）から探す一覧
+  app.get('/therapists', async (req) => {
+    const q = z.object({
+      station: z.string().optional(),
+      q: z.string().max(80).optional(),
+      sort: z.enum(['reviews', 'recent', 'trust']).default('reviews'),
+    }).parse(req.query);
+    const therapists = await catalog.listTherapists({
+      stations: q.station?.split(',').filter(Boolean), keyword: q.q, sort: q.sort,
+    });
+    return { therapists };
+  });
+
   app.get('/therapists/:slug', async (req, reply) => {
     const { slug } = z.object({ slug: z.string().max(80) }).parse(req.params);
     const data = await reviews.listForTherapist(slug, await optionalUser(req));

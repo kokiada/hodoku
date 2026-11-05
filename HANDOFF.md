@@ -107,6 +107,7 @@ test/                   後述
 | メソッド | パス | 説明 |
 |---|---|---|
 | GET | `/shops` | 一覧（station, flags, budget, minutes, sort） |
+| GET | `/therapists` | **人からさがす一覧**（店舗横断・口コミ数/信頼度つき。station, q, sort=reviews/recent/trust） |
 | GET | `/shops/:slug` | 店舗詳細（minutes で総額再計算） |
 | GET | `/therapists/:slug` | 担当者＋公開口コミ（**有料未購入は冒頭50字のみ**） |
 | POST | `/reviews` | 投稿（要ログイン） |
@@ -204,7 +205,9 @@ npm run e2e:flow    # ブラウザ: 投稿→審査→購入→返金→管理�
 3. **Docker / 本番構成** — マルチステージ `Dockerfile`（`dist/src`+`public` のみの軽量イメージ、非rootで実行、HEALTHCHECK付き）、`docker-compose.yml`（app + PostgreSQL16）、`.dockerignore`、本番ビルド専用 `tsconfig.build.json`（test を含めない）と `npm run build:prod`。
 4. **CI** — `.github/workflows/ci.yml`（typecheck → test → build:prod → smoke、別ジョブで Docker イメージのビルド検証）。
 5. **デプロイ手順 / env サンプル** — `docs/DEPLOY.md`（Caddy で TLS 終端する低コスト構成、初期管理者の作り方、バックアップ）、`.env.example`。
-6. **有料は「後日公開」運用** — `GET /api/config` が `salesEnabled`（＝`paymentProvider !== 'disabled'`）を返す。本番既定は販売オフで、担当者ページの有料ロックUIは「後日公開予定」表示に、投稿フォームの有料オプションは非表示になる（`public/therapist.html`・`review.html`・`assets/hodoku.js` が `window.hodokuFlags` を参照）。決済を接続すると自動で有料導線が復活する（コード変更不要）。
+6. **有料は「後日公開」運用** — `GET /api/config` が `salesEnabled`/`pointsEnabled`（＝`pointsProvider !== 'disabled'`）を返す。本番既定は販売オフで、担当者ページの有料ロックUIは「後日公開予定」表示に、投稿フォームの有料オプションは非表示になる（`public/therapist.html`・`review.html`・`assets/hodoku.js` が `window.hodokuFlags` を参照）。ビットキャッシュ決済を接続すると自動で有料導線・チャージが復活する（コード変更不要）。
+7. **決済はビットキャッシュ＋風マネーポイント** — チャージ型。`src/domain/points.ts`（チャージパック: 500円→400pt ほか、画像準拠）、`src/points/service.ts`（残高・チャージ・Webフック付与・ポイント消費での口コミ解放）、マイグレーション `006_points.sql`（`point_charges`/`point_ledger`/`review_unlocks`）。決済プロバイダは `PointsPaymentProvider`（`BitcashPointsProvider`=本番雛形・Webフック署名検証HMAC、`StubPointsProvider`=開発/テスト、`DisabledPointsProvider`）。API: `GET /points/packs`・`POST /points/charge`・`POST /reviews/:id/unlock`・`GET /me/points`・`POST /points/webhook/bitcash`（CSRF対象外・署名検証）。環境変数 `POINTS_PROVIDER`(stub/bitcash/disabled)・`BITCASH_WEBHOOK_SECRET`。チャージ画面は `public/charge.html`。投稿者への還元・出金は今回スコープ外（運営売上のみ）。**決済代行会社のAPI仕様が来たら `BitcashPointsProvider` の beginCharge/verifyWebhook を接続。**
+8. **人（担当者）から探す導線** — 女性は「人」を見る前提で、店舗ではなく担当者からの発見を主導線に。`GET /api/therapists`（店舗横断・口コミ数/利用確認数/有料数/直近更新/信頼度、station・キーワード・並び替え）、画面 `public/people.html`（「他◯人の口コミ」を前面に出す“沼”訴求）。トップとサイト内ナビを「人からさがす／店舗からさがす」に変更。
 
 ### 🔒 公開前に必要な項目（2フェーズで管理。詳細と最新状況は `.kiro/steering/release-checklist.md`）
 

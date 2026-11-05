@@ -43,6 +43,17 @@ export interface ShopQuery {
   stations?: string[]; flags?: string[]; budgetYen?: number; minutes: 60 | 90 | 120; sort: 'total' | 'reviews' | 'updated';
 }
 
+export interface TherapistSummary {
+  slug: string; name: string; bio: string; texture: string;
+  shopSlug: string; shopName: string; area: string; station: string;
+  reviewCount: number; verifiedCount: number; paidCount: number; trust: TrustLevel;
+  lastReviewedAt: string | null;
+}
+
+export interface TherapistQuery {
+  stations?: string[]; keyword?: string; sort: 'reviews' | 'recent' | 'trust';
+}
+
 export class CatalogService {
   constructor(private db: Queryable) {}
 
@@ -62,6 +73,45 @@ export class CatalogService {
       updated: (a, b) => (b.lastCheckedAt ?? '').localeCompare(a.lastCheckedAt ?? ''),
     };
     return out.map((x) => x.s).sort(cmp[q.sort]);
+  }
+
+  /** 人（担当者）から探す一覧。店舗横断で、口コミ数・直近の活動・信頼度を返す */
+  async listTherapists(q: TherapistQuery): Promise<TherapistSummary[]> {
+    const rows = (await this.db.query<{
+      slug: string; name: string; bio: string; texture: string; shop_slug: string; shop_name: string; area: string; station: string;
+      n: string; v: string; paid: string; last_reviewed_at: string | null;
+    }>(
+      `SELECT t.slug, t.name, t.bio, t.texture, s.slug AS shop_slug, s.name AS shop_name, s.area, s.station,
+         count(r.id) FILTER (WHERE r.status='published') AS n,
+         count(r.id) FILTER (WHERE r.status='published' AND r.usage_verified) AS v,
+         count(r.id) FILTER (WHERE r.status='published' AND r.listing_kind='paid') AS paid,
+         to_char(max(r.published_at) FILTER (WHERE r.status='published'), 'YYYY-MM-DD') AS last_reviewed_at
+       FROM therapists t JOIN shops s ON s.id = t.shop_id
+       LEFT JOIN reviews r ON r.therapist_id = t.id
+       WHERE t.published AND s.published
+       GROUP BY t.id, s.id`,
+    )).rows;
+    let out: TherapistSummary[] = rows.map((r) => {
+      const n = Number(r.n), v = Number(r.v);
+      return {
+        slug: r.slug, name: r.name, bio: r.bio, texture: r.texture,
+        shopSlug: r.shop_slug, shopName: r.shop_name, area: r.area, station: r.station,
+        reviewCount: n, verifiedCount: v, paidCount: Number(r.paid), trust: trustLevel(n, v),
+        lastReviewedAt: r.last_reviewed_at ?? null,
+      };
+    });
+    if (q.stations?.length) out = out.filter((t) => q.stations!.includes(t.station));
+    if (q.keyword) {
+      const kw = q.keyword.trim().toLowerCase();
+      if (kw) out = out.filter((t) => `${t.name} ${t.bio} ${t.shopName} ${t.area}`.toLowerCase().includes(kw));
+    }
+    const cmp: Record<TherapistQuery['sort'], (a: TherapistSummary, b: TherapistSummary) => number> = {
+      // 「話題」＝口コミ数が多い順。沼っている人の“他の人の口コミ”が気になる訴求に合わせる
+      reviews: (a, b) => b.reviewCount - a.reviewCount || (b.lastReviewedAt ?? '').localeCompare(a.lastReviewedAt ?? ''),
+      recent: (a, b) => (b.lastReviewedAt ?? '').localeCompare(a.lastReviewedAt ?? ''),
+      trust: (a, b) => b.verifiedCount - a.verifiedCount || b.reviewCount - a.reviewCount,
+    };
+    return out.sort(cmp[q.sort]);
   }
 
   async getShop(slug: string, minutes: 60 | 90 | 120) {
