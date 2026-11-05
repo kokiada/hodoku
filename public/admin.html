@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hodoku 管理｜投稿審査</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/hodoku.css">
+<style>
+body{font-size:14px;line-height:1.7}
+.app{display:grid;grid-template-columns:minmax(0,1fr);min-height:100vh}
+.side,.main{min-width:0}
+.side{background:var(--sumi);color:#CFC6D4;padding:20px}
+.side .logo{color:var(--washi);font-size:18px}
+.side .logo small{color:#A79FB3}
+.side nav{margin-top:20px}
+.side ul{list-style:none;display:flex;gap:4px;overflow-x:auto}
+.side a{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;text-decoration:none;white-space:nowrap;font-size:13px}
+.side a:hover{background:rgba(255,255,255,.06)}
+.side a[aria-current="page"]{background:#3D3343;color:var(--washi)}
+.side .badge{font-size:11px;min-width:22px;text-align:center;padding:1px 6px;border-radius:999px;background:#4A3F50;color:var(--washi)}
+.side a[aria-current="page"] .badge{background:var(--suou)}
+.side .who{display:none}
+.main{padding:24px 20px 48px;min-width:0}
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px}
+.top h1{font:700 24px/1.4 var(--serif);letter-spacing:.06em}
+.top p{font-size:12px;color:var(--fuji-ink)}
+.grid{display:grid;gap:20px;margin-top:20px}
+.queue{background:var(--kinu);border:1px solid var(--suna);border-radius:18px;overflow-x:auto}
+.queue table{width:100%;border-collapse:collapse;font-size:13px}
+.queue th,.queue td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.queue thead th{font-size:11px;font-weight:500;color:var(--fuji-ink);background:var(--washi);letter-spacing:.06em}
+.queue tbody tr{cursor:pointer}
+.queue tbody tr:hover{background:#F6F2EE}
+.queue tbody tr[aria-selected="true"]{background:var(--suou-wash)}
+.queue tbody tr[aria-selected="true"] td:first-child{box-shadow:inset 2px 0 0 var(--suou)}
+.queue tbody tr.done-row{opacity:.45}
+.queue .id{font-size:11px;color:var(--fuji-ink);display:block}
+.queue .wait{font-variant-numeric:tabular-nums;white-space:nowrap}
+.queue .wait.late{color:var(--suou-deep);font-weight:700}
+.flag{display:inline-block;font-size:11px;line-height:1.4;padding:2px 8px;border-radius:6px;background:var(--suou-wash);color:var(--suou-deep);margin:0 4px 4px 0;white-space:nowrap}
+.flag.ok{background:#ECE8EF;color:var(--fuji-ink)}
+.filter{display:flex;flex-wrap:wrap;gap:6px}
+.col-flags{display:none}
+.panel{background:var(--kinu);border:1px solid var(--suna);border-radius:18px;padding:22px}
+.panel .ph{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.panel h2{font:700 18px var(--serif);letter-spacing:.04em}
+.box{margin-top:14px;padding:14px 16px;border-radius:12px;background:var(--washi);font-size:13px}
+.box h3{font-size:11px;font-weight:500;color:var(--fuji-ink);letter-spacing:.08em;margin-bottom:4px}
+.box.warn{background:var(--suou-wash)}
+.box.warn h3{color:var(--suou-deep)}
+.box q{quotes:none;font:500 15px/1.9 var(--serif);display:block}
+.decide{margin-top:18px;border:0}
+.decide legend{font-size:13px;font-weight:500;margin-bottom:6px}
+.decide .opt-row{padding:10px 4px}
+.reason{margin-top:12px}
+.act{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:16px}
+.act .btn{min-height:46px}
+.log{font-size:11px;color:var(--fuji-ink);margin-top:12px}
+.kbd{font-size:11px;color:var(--fuji-ink);margin-top:4px}
+kbd{font:11px var(--sans);border:1px solid var(--suna);border-radius:4px;padding:0 5px;background:var(--washi)}
+.empty{display:none;text-align:center;padding:40px 0}
+.empty h2{font:700 18px var(--serif)}
+.empty p{font-size:13px;color:var(--fuji-ink);margin-top:6px}
+@media (min-width:1024px){
+  .app{grid-template-columns:232px minmax(0,1fr)}
+  .side{padding:28px 18px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
+  .side ul{flex-direction:column;overflow:visible}
+  .side .who{display:block;margin-top:auto;font-size:11px;color:#A79FB3;line-height:1.7}
+  .main{padding:36px 40px}
+  .top h1{font-size:28px}
+  .grid{grid-template-columns:minmax(0,1.35fr) minmax(360px,1fr);align-items:start}
+  .panel{position:sticky;top:24px}
+  .col-flags{display:table-cell}
+}
+.empty-state{padding:40px 0;text-align:center;color:var(--fuji-ink)}
+.side a[role=tab]{width:100%;background:none;border:0;color:inherit;font:inherit;cursor:pointer;text-align:left}
+.kv{display:grid;grid-template-columns:7em 1fr;gap:4px 12px;font-size:13px;margin-top:10px}
+.kv dt{color:var(--fuji-ink)}
+.denied{padding:60px 20px;text-align:center}
+.list-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+</style>
+</head>
+<body data-gate="off">
+<div class="app" id="app" hidden>
+  <aside class="side">
+    <span class="logo">Hodoku<small>管理</small></span>
+    <nav aria-label="管理メニュー"><ul role="tablist">
+      <li><a href="#" role="tab" data-view="queue" aria-current="page">投稿審査 <span class="badge" id="b-queue">0</span></a></li>
+      <li><a href="#" role="tab" data-view="refunds">返金申請 <span class="badge" id="b-refunds">0</span></a></li>
+      <li><a href="#" role="tab" data-view="payouts" id="nav-payouts">出金申請 <span class="badge" id="b-payouts">0</span></a></li>
+      <li><a href="#" role="tab" data-view="reports">通報 <span class="badge" id="b-reports">0</span></a></li>
+    </ul></nav>
+    <p class="who" id="who"></p>
+  </aside>
+
+  <main class="main">
+    <div class="top"><div><h1 id="title">投稿審査</h1><p id="subtitle"></p></div></div>
+    <div class="grid">
+      <section class="queue" aria-label="一覧"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table><div class="empty-state" id="empty" hidden></div></section>
+      <section class="panel" aria-live="polite" id="panel"></section>
+    </div>
+    <div class="memo legal" style="margin-top:24px;max-width:720px"><b>要確認（弁護士）</b>情報流通プラットフォーム対処法にもとづく削除依頼の対応期限と通知文、ログ・IPの保存期間、類似文面での停止基準、有料出品の審査基準と返金の判定フロー。</div>
+  </main>
+</div>
+<div class="denied" id="denied" hidden><h1>このページを表示する権限がありません</h1><p><a href="index.html">トップへ戻る</a></p></div>
+<script src="assets/hodoku.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const ANS = {visitedWhen: {this_month: '今月', last_month: '先月', few_months_ago: '2〜3か月前'}, ngPrecheck: {on_booking: '予約時', on_site: '当日', none: 'なし'}, totalMatched: {matched: '案内どおり', slightly_off: '少し違った', very_off: '大きく違った'}};
+  const FLAG = {similar: '類似文面', personal_info: '個人情報の可能性', exaggeration: '誇大表現', gift: '特典あり'};
+  let me = null, view = 'queue', rows = [], cur = null;
+
+  const api = (path, body) => hodokuApi('/admin' + path, body ? {body} : {});
+
+  // ----- ビュー定義：列・行・詳細パネル -----
+  const V = {
+    queue: {
+      title: '投稿審査', path: '/queue', empty: '審査待ちはありません', cols: ['投稿・対象', '投稿者', '自動チェック', '待ち時間'],
+      row: r => [h('td', {}, h('span', {class: 'id', text: '#' + r.id.slice(0, 8)}), `${r.therapistName}／${r.shopName}`),
+        h('td', {}, r.authorNickname, h('span', {class: 'id', text: `投稿${r.authorPostCount}件`})),
+        h('td', {class: 'col-flags'}, ...(r.flags.length ? r.flags.map(f => h('span', {class: 'flag', text: FLAG[f] ?? f})) : [h('span', {class: 'flag ok', text: 'チェック通過'})]),
+          r.listingKind === 'paid' ? h('span', {class: 'flag', text: `有料出品 ${yen(r.priceYen)}`}) : null),
+        h('td', {class: 'wait' + (r.waitingHours >= 24 ? ' late' : ''), text: `${r.waitingHours}時間`})],
+      detail: queueDetail,
+    },
+    refunds: {
+      title: '返金申請', path: '/refunds', empty: '返金申請はありません', cols: ['購入', '購入者', '金額', '申請日'],
+      row: r => [h('td', {}, h('span', {class: 'id', text: '#' + r.purchaseId.slice(0, 8)}), `${r.author} さんの口コミ`), h('td', {text: r.buyer}), h('td', {text: yen(r.priceYen)}), h('td', {text: ymd(r.createdAt)})],
+      detail: r => detailBox('返金申請', [['理由', r.reason], ['金額', yen(r.priceYen)], ['購入者', r.buyer], ['投稿者', r.author]], r.body, [
+        btn('承認して返金する', 'primary', () => decide(`/refunds/${r.id}/decide`, {decision: 'approve'}, '返金しました')),
+        btn('却下', 'quiet', () => decide(`/refunds/${r.id}/decide`, {decision: 'deny'}, '却下しました'))]),
+    },
+    payouts: {
+      title: '出金申請', path: '/payouts', empty: '出金申請はありません', cols: ['申請者', '金額', '申請日'],
+      row: r => [h('td', {}, r.nickname, h('span', {class: 'id', text: r.email})), h('td', {text: yen(r.amountYen)}), h('td', {text: ymd(r.createdAt)})],
+      detail: r => detailBox('出金申請', [['申請者', r.nickname], ['メール', r.email], ['金額', yen(r.amountYen)]], null, [
+        btn('支払済みにする', 'primary', () => { if (confirm(`${r.nickname} さんへ ${yen(r.amountYen)} を振り込んだ後に押してください。よろしいですか？`)) decide(`/payouts/${r.id}/decide`, {decision: 'paid'}, '支払済みにしました'); }),
+        btn('却下（残高に戻す）', 'quiet', () => decide(`/payouts/${r.id}/decide`, {decision: 'denied'}, '却下しました'))]),
+    },
+    reports: {
+      title: '通報', path: '/reports', empty: '通報はありません', cols: ['内容', '通報者', '投稿者', '通報日'],
+      row: r => [h('td', {}, h('span', {class: 'id', text: '#' + r.reviewId.slice(0, 8)}), r.reason), h('td', {text: r.reporter ?? '—'}), h('td', {text: r.author}), h('td', {text: ymd(r.createdAt)})],
+      detail: r => detailBox('通報', [['理由', r.reason], ['通報者', r.reporter ?? '—'], ['投稿者', r.author]], r.body, [
+        btn('口コミを非公開にして閉じる', 'primary', () => decide(`/reports/${r.id}/close`, {unpublish: true}, '非公開にしました')),
+        btn('問題なしとして閉じる', 'quiet', () => decide(`/reports/${r.id}/close`, {unpublish: false}, '閉じました'))]),
+    },
+  };
+
+  function btn(label, kind, fn) { return h('button', {class: `btn ${kind}`, type: 'button', onclick: fn, text: label}); }
+  function detailBox(title, kv, body, actions) {
+    return h('div', {},
+      h('div', {class: 'ph'}, h('h2', {text: title})),
+      h('dl', {class: 'kv'}, ...kv.flatMap(([k, v]) => [h('dt', {text: k}), h('dd', {text: v})])),
+      body ? h('div', {class: 'box'}, h('h3', {text: '口コミ本文'}), h('q', {text: body})) : null,
+      h('div', {class: 'list-actions'}, ...actions),
+      h('p', {class: 'log', text: '操作は担当者名と時刻つきで操作ログに記録されます。'}));
+  }
+
+  function queueDetail(r) {
+    const a = r.answers;
+    const box = h('div', {});
+    const verified = h('input', {type: 'checkbox', id: 'q-verified', checked: r.usageVerified});
+    const reason = h('input', {class: 'input', id: 'q-reason', placeholder: '差し戻し・非公開のときは必須'});
+    const err = h('p', {class: 'err', id: 'q-err'});
+    const run = (decision, ok) => async () => {
+      err.textContent = '';
+      try { await api(`/reviews/${r.id}/moderate`, {decision, reason: reason.value, usageVerified: verified.checked}); hodokuToast(ok); await refresh(); }
+      catch (e) { err.textContent = e.message + (e.details ? '：' + e.details.join('、') : ''); }
+    };
+    box.append(
+      h('div', {class: 'ph'}, h('h2', {text: `#${r.id.slice(0, 8)} の内容`}), r.flags.includes('similar') ? h('span', {class: 'trust low', text: '要確認'}) : null),
+      h('div', {class: 'box'}, h('h3', {text: '選んだ回答'}), h('p', {text: `時期：${ANS.visitedWhen[a.visitedWhen]}／${a.courseMinutes}分／NG事前確認：${ANS.ngPrecheck[a.ngPrecheck]}／総額：${ANS.totalMatched[a.totalMatched]}／特典：${r.giftReceived ? 'あり' : 'なし'}`})),
+      h('div', {class: 'box' + (r.paidIneligible.length ? ' warn' : '')}, h('h3', {text: '出品設定'}),
+        h('p', {text: r.listingKind === 'paid' ? `有料 ${yen(r.priceYen)}（本文${r.bodyChars}字）` : '無料公開'}),
+        r.listingKind === 'paid' && r.paidIneligible.length ? h('p', {text: '有料の条件：' + r.paidIneligible.join('、')}) : null),
+      h('div', {class: 'box'}, h('h3', {text: 'ひとこと'}), h('q', {text: r.body || '（本文なし）'})),
+      r.flags.length ? h('div', {class: 'box warn'}, h('h3', {text: '自動チェックの結果'}), h('p', {text: r.flags.map(f => FLAG[f] ?? f).join('、') + (r.similarity != null && r.similarity >= 70 ? `（最大一致 ${r.similarity}%）` : '')})) : null,
+      h('label', {class: 'opt-row', style: 'margin-top:14px'}, verified, h('span', {text: '利用を確認した（予約メール等で検証）'})),
+      h('div', {class: 'reason'}, h('label', {class: 'field-l', for: 'q-reason', text: '理由（記録に残ります）'}), reason, err),
+      h('div', {class: 'list-actions'},
+        btn(r.listingKind === 'paid' ? '承認して有料で公開' : '承認して公開', 'primary', run('approve', '承認しました')),
+        r.listingKind === 'paid' ? btn('無料に変えて公開', 'quiet', run('approve_free', '無料で公開しました')) : null,
+        btn('差し戻す', 'quiet', run('request_changes', '差し戻しました')),
+        btn('非公開にする', 'quiet', run('reject', '非公開にしました'))),
+      h('p', {class: 'log', text: '操作は担当者名と時刻つきで操作ログに記録されます。'}));
+    return box;
+  }
+
+  async function decide(path, body, ok) {
+    try { await api(path, body); hodokuToast(ok); await refresh(); }
+    catch (e) { hodokuToast(e.message); }
+  }
+
+  function show(r) {
+    cur = r;
+    [...$('tbody').children].forEach((tr, i) => tr.setAttribute('aria-selected', String(rows[i] === r)));
+    $('panel').replaceChildren(V[view].detail(r));
+  }
+
+  async function loadView() {
+    const v = V[view];
+    $('title').textContent = v.title;
+    document.querySelectorAll('[role=tab]').forEach(t => t.removeAttribute('aria-current'));
+    document.querySelector(`[data-view=${view}]`).setAttribute('aria-current', 'page');
+    $('thead').replaceChildren(h('tr', {}, ...v.cols.map((c, i) => h('th', {scope: 'col', class: view === 'queue' && i === 2 ? 'col-flags' : '', text: c}))));
+    try { rows = (await api(v.path)).items; } catch (e) { rows = []; showError($('panel'), e); return; }
+    $('subtitle').textContent = `${rows.length}件`;
+    $('tbody').replaceChildren(...rows.map(r => { const tr = h('tr', {tabindex: '0', onclick: () => show(r), onkeydown: e => { if (e.key === 'Enter') show(r); }}, ...v.row(r)); return tr; }));
+    $('empty').hidden = rows.length > 0; $('empty').textContent = v.empty;
+    $('panel').replaceChildren();
+    if (rows.length) show(cur && rows.find(r => r.id === cur.id) || rows[0]);
+  }
+
+  async function badges() {
+    for (const k of ['queue', 'refunds', 'reports']) { try { $('b-' + k).textContent = (await api(V[k].path)).items.length; } catch {} }
+    if (me.role === 'admin') { try { $('b-payouts').textContent = (await api(V.payouts.path)).items.length; } catch {} }
+  }
+  async function refresh() { cur = null; await Promise.all([loadView(), badges()]); }
+
+  document.querySelectorAll('[role=tab]').forEach(t => t.addEventListener('click', e => { e.preventDefault(); view = t.dataset.view; cur = null; loadView(); }));
+  document.addEventListener('keydown', e => {
+    if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+    const i = rows.indexOf(cur);
+    if (e.key === 'j' && rows.length) show(rows[Math.min(i + 1, rows.length - 1)]);
+    if (e.key === 'k' && rows.length) show(rows[Math.max(i - 1, 0)]);
+  });
+
+  (async () => {
+    me = await window.hodokuMe;
+    if (!me || !['moderator', 'admin'].includes(me.role)) { $('denied').hidden = false; return; }
+    $('app').hidden = false;
+    $('who').textContent = `${me.nickname}（${me.role === 'admin' ? '管理者' : 'モデレーター'}）`;
+    if (me.role !== 'admin') $('nav-payouts').closest('li').remove();
+    await refresh();
+  })();
+})();
+</script>
+</body>
+</html>

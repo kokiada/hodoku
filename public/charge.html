@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hodoku｜ポイントをチャージする</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/hodoku.css">
+<style>
+.bal{margin-top:16px;font-size:14px;color:var(--fuji-ink)}
+.bal b{font:700 22px var(--serif);color:var(--sumi);font-variant-numeric:tabular-nums}
+.packs{list-style:none;margin:24px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:560px){.packs{grid-template-columns:1fr}}
+.pack{position:relative}
+.pack input{position:absolute;opacity:0;pointer-events:none}
+.pack label{display:block;cursor:pointer;border:1px solid var(--suna);border-radius:14px;padding:18px 18px 16px;background:var(--washi);transition:border-color .12s,box-shadow .12s}
+.pack label:hover{border-color:var(--fuji)}
+.pack input:checked + label{border-color:var(--suou);box-shadow:0 0 0 1px var(--suou) inset}
+.pack input:focus-visible + label{outline:2px solid var(--suou);outline-offset:2px}
+.pack .amt{display:flex;align-items:flex-start;gap:8px}
+.pack .radio{flex:0 0 auto;width:16px;height:16px;border:1px solid var(--fuji);border-radius:50%;margin-top:3px;position:relative}
+.pack input:checked + label .radio{border-color:var(--suou)}
+.pack input:checked + label .radio::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--suou)}
+.pack .yen{font:700 18px/1.4 var(--serif)}
+.pack .pt{display:block;margin-top:8px;font-size:13px;color:var(--suou)}
+.pack .pt b{font-weight:700;font-variant-numeric:tabular-nums}
+.pack .badge{position:absolute;top:14px;right:14px;display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.pack .rec{font-size:10px;color:#fff;background:var(--suou);border-radius:999px;padding:3px 9px;line-height:1.4}
+.pack .bonus{font-size:11px;color:var(--suou);background:var(--kinu);border:1px solid var(--suna);border-radius:999px;padding:3px 9px;font-variant-numeric:tabular-nums}
+.act{margin-top:24px;display:flex;flex-direction:column;gap:10px;max-width:420px}
+.note{margin-top:18px;font-size:12px;color:var(--fuji-ink);line-height:1.8}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html">Hodoku<small>ほどく</small></a>
+  <nav aria-label="メイン"><ul><li><a href="shops.html">店舗をさがす</a></li><li><a href="therapist.html">口コミ</a></li><li><a href="guide.html">ガイド</a></li><li><a href="account.html">マイページ</a></li><li><a href="login.html">ログイン</a></li></ul></nav>
+  <button class="menu" aria-label="メニュー" type="button"><span></span></button>
+</header>
+
+<main class="wrap">
+  <div class="page-head">
+    <h1>ポイントをチャージする</h1>
+    <p>お支払いはビットキャッシュです。チャージしたポイントで、有料の口コミを1件ずつ解放して読めます。1ポイント＝1円相当です。</p>
+    <p class="bal">保有ポイント：<b id="bal">—</b> pt</p>
+  </div>
+
+  <form id="chargeForm">
+    <ul class="packs" id="packs" role="radiogroup" aria-label="チャージ額"></ul>
+    <p class="err" id="err" role="alert" hidden></p>
+    <div class="act">
+      <button class="btn primary" type="submit" id="go">このチャージ額ですすむ</button>
+      <a class="btn quiet" href="account.html">マイページへ戻る</a>
+    </div>
+    <p class="note">
+      決済画面はビットキャッシュ（決済代行会社）のページに移動します。決済が完了すると、自動的にポイントが反映されます。<br>
+      デジタルコンテンツの性質上、チャージ後のポイントの払い戻しはできません（詳しくは<a href="legal.html#terms">利用規約</a>）。18歳未満の方はご利用いただけません。
+    </p>
+  </form>
+</main>
+
+<footer class="site"><div class="in">
+  <div><a class="logo" href="index.html">Hodoku<small>ほどく</small></a><p style="margin-top:14px">予約の前に、確かめて選ぶための比較サイト。<br>18歳未満の方はご利用いただけません。</p></div>
+  <div>
+    <ul><li><a href="legal.html#terms">利用規約</a></li><li><a href="legal.html#privacy">プライバシーポリシー</a></li><li><a href="legal.html#tokushoho">特定商取引法に基づく表記</a></li><li><a href="legal.html#guideline">投稿ガイドライン</a></li><li><a href="legal.html#removal">削除・訂正の依頼</a></li><li><a href="legal.html#contact">お問い合わせ</a></li></ul>
+    <p>© 2026 Hodoku（デザイン用サンプル）</p>
+  </div>
+</div></footer>
+
+<script src="assets/hodoku.js"></script>
+<script>
+(() => {
+  const DEFAULT_YEN = 2000;
+  const packsEl = document.getElementById('packs');
+  const err = document.getElementById('err');
+  const showErr = m => { err.textContent = m; err.hidden = false; };
+
+  // 未ログインはログインへ
+  window.hodokuMe.then(u => { if (!u) location.replace('login.html?next=' + encodeURIComponent('/charge')); });
+
+  // チャージが無効（決済未接続）なら案内して戻す
+  window.hodokuFlags.then(f => { if (!f.pointsEnabled) { packsEl.replaceChildren(window.h('li', {}, window.h('p', {class:'single', text:'ポイントのチャージは現在準備中です。'}))); document.getElementById('go').disabled = true; } });
+
+  // 残高表示
+  hodokuApi('/me/points').then(s => { document.getElementById('bal').textContent = Number(s.balancePt).toLocaleString('ja-JP'); }).catch(() => {});
+
+  // パック一覧を描画
+  hodokuApi('/points/packs').then(({packs}) => {
+    packsEl.replaceChildren(...packs.map((p, i) => {
+      const id = 'pack-' + p.yen;
+      const input = window.h('input', {type:'radio', name:'pack', id, value:String(p.yen)});
+      if (p.yen === DEFAULT_YEN) input.checked = true;
+      const badge = window.h('span', {class:'badge'});
+      if (p.recommended) badge.append(window.h('span', {class:'rec', text:'おすすめ'}));
+      if (p.bonus) badge.append(window.h('span', {class:'bonus', text:'+' + p.bonus.toLocaleString('ja-JP')}));
+      const label = window.h('label', {for:id},
+        window.h('span', {class:'amt'}, window.h('span', {class:'radio', 'aria-hidden':'true'}),
+          window.h('span', {class:'yen', text:`${p.yen.toLocaleString('ja-JP')} ビットキャッシュ`})),
+        window.h('span', {class:'pt'}, '→ ', window.h('b', {text:`${p.points.toLocaleString('ja-JP')}`}), ' ポイント'),
+        badge);
+      return window.h('li', {class:'pack'}, input, label);
+    }));
+  }).catch(e => showErr(e.message || '読み込めませんでした'));
+
+  document.getElementById('chargeForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    err.hidden = true;
+    const sel = packsEl.querySelector('[name=pack]:checked');
+    if (!sel) { showErr('チャージ額を選んでください'); return; }
+    const go = document.getElementById('go'); go.disabled = true; go.textContent = '決済画面にすすんでいます…';
+    try {
+      const res = await hodokuApi('/points/charge', {body:{packYen: Number(sel.value)}});
+      // 決済代行会社のホスト画面へ移動（スタブでは確認ページに戻る）
+      location.href = res.redirectUrl;
+    } catch (ex) {
+      go.disabled = false; go.textContent = 'このチャージ額ですすむ';
+      showErr(ex.status === 503 ? 'ポイントのチャージは現在準備中です' : (ex.message || 'チャージを開始できませんでした'));
+    }
+  });
+})();
+</script>
+</body>
+</html>

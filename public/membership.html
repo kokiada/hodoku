@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hodoku｜会員登録と料金</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/hodoku.css">
+<style>
+/* 料金：カードを並べず、罫線の比較表にする */
+.ptable{width:100%;border-collapse:collapse;margin-top:24px;font-size:13px}
+.ptable caption{text-align:left;font-size:12px;color:var(--fuji-ink);caption-side:bottom;padding-top:12px}
+.ptable th,.ptable td{padding:14px 8px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle}
+.ptable thead th{border-bottom:1px solid var(--sumi);vertical-align:bottom;padding-bottom:16px}
+.ptable thead th:first-child{text-align:left}
+.ptable tbody th{text-align:left;font-weight:400}
+.ptable .pn{display:block;font:700 14px var(--serif);letter-spacing:.06em}
+.ptable .pp{display:block;font:700 22px/1.3 var(--serif);margin-top:4px;font-variant-numeric:tabular-nums}
+.ptable .pp small{font:400 11px var(--sans);color:var(--fuji-ink)}
+.ptable .rec{display:inline-block;font-size:10px;color:var(--suou);border:1px solid var(--suou);border-radius:999px;padding:2px 8px;margin-bottom:6px;line-height:1.4}
+.ptable col.sel{background:var(--suou-wash)}
+@media (max-width:600px){.ptable .pn{font-size:12px;letter-spacing:0}.ptable .pp{font-size:18px}.ptable th,.ptable td{padding:12px 4px}.ptable tbody th{font-size:12px}}
+.yes,.no{display:inline-block;width:8px;height:8px;border-radius:50%}
+.yes{background:var(--suou)}
+.no{border:1px solid var(--fuji)}
+.single{margin-top:20px;font-size:13px;padding:14px 18px;border:1px solid var(--suna);border-radius:14px}
+.single b{font-weight:500}
+
+.signup{margin-top:56px}
+.plan-pick{display:grid;gap:8px;margin-top:20px;border:0!important}
+.plan-pick .opt-row{border:1px solid var(--suna);border-radius:14px;padding:14px 16px;background:var(--kinu)}
+.plan-pick .opt-rows{border:0;display:grid;gap:8px}
+.plan-pick .opt-row .pr{margin-left:auto;font:700 16px var(--serif);white-space:nowrap}
+.plan-pick .opt-row:has(input:checked){border-color:var(--suou);background:var(--suou-wash)}
+.fields{display:grid;gap:20px;margin-top:28px}
+.pw{position:relative}
+.pw .input{padding-right:72px}
+.pw button{position:absolute;right:8px;top:50%;transform:translateY(-50%);min-height:36px;padding:0 12px;border:0;background:none;font:12px var(--sans);color:var(--fuji-ink);cursor:pointer;text-decoration:underline}
+.pay-methods .opt-rows{border:0;display:grid;gap:8px}
+.pay-methods .opt-row{border:1px solid var(--suna);border-radius:14px;background:var(--kinu);padding:14px 16px}
+.pay-methods .opt-row:has(input:checked){border-color:var(--suou)}
+.pay-methods fieldset{border:0}
+.pay-methods legend{font-size:13px;font-weight:500;margin-bottom:8px}
+.privacy{margin-top:24px;padding:18px 20px;border:1px solid var(--suna);border-radius:18px;font-size:12px;line-height:1.85}
+.privacy h3{font:700 14px var(--serif);margin-bottom:6px;letter-spacing:.06em}
+.privacy ul{list-style:none;display:grid;gap:4px}
+.privacy li{padding-left:14px;position:relative}
+.privacy li::before{content:"";position:absolute;left:0;top:.9em;width:6px;height:1px;background:var(--suou)}
+.agree{margin-top:20px;font-size:12px;color:var(--fuji-ink)}
+.agree a{color:var(--sumi)}
+.submit{display:grid;gap:10px;margin-top:20px}
+.done{display:none;padding:40px 0;text-align:center}
+.done h2{font:700 24px var(--serif)}
+.done p{margin-top:10px;font-size:14px;color:var(--fuji-ink)}
+body.sent #sf{display:none}body.sent .done{display:block}
+@media (min-width:1024px){
+  .layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:80px;align-items:start}
+  .signup{margin-top:0;padding:36px 40px;background:var(--kinu);border:1px solid var(--suna);border-radius:24px;position:sticky;top:24px}
+  .plan-pick .opt-row,.pay-methods .opt-row{background:var(--washi)}
+  .ptable{font-size:14px}
+  .ptable th,.ptable td{padding:16px 12px}
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html">Hodoku<small>ほどく</small></a>
+  <nav aria-label="メイン"><ul><li><a href="shops.html">店舗をさがす</a></li><li><a href="therapist.html">口コミ</a></li><li><a href="guide.html">ガイド</a></li><li><a href="account.html">マイページ</a></li><li><a href="login.html">ログイン</a></li></ul></nav>
+  <button class="menu" aria-label="メニュー" type="button"><span></span></button>
+</header>
+
+<main class="wrap">
+  <div class="page-head">
+    <h1>会員登録と料金</h1>
+    <p>登録はメールアドレスとニックネームだけ。本名や電話番号はうかがいません。いつでも解約できます。有料の口コミを販売すると、代金の90%を受け取れます。</p>
+  </div>
+
+  <div class="layout">
+    <section aria-labelledby="h-plan">
+      <h2 class="h2" id="h-plan">プランでできること</h2>
+      <table class="ptable">
+        <caption>料金は税込・仮のサンプルです。月額2段階にするかは未決です。</caption>
+        <colgroup><col><col><col><col class="sel"></colgroup>
+        <thead><tr>
+          <th scope="col"><span class="vh">機能</span></th>
+          <th scope="col"><span class="pn">無料</span><span class="pp">¥0</span></th>
+          <th scope="col"><span class="pn">スタンダード</span><span class="pp">¥980<small>／月</small></span></th>
+          <th scope="col"><span class="rec">おすすめ</span><span class="pn">プレミアム</span><span class="pp">¥1,480<small>／月</small></span></th>
+        </tr></thead>
+        <tbody>
+          <tr><th scope="row">無料の口コミの閲覧・投稿</th><td><span class="yes" aria-label="あり"></span></td><td><span class="yes" aria-label="あり"></span></td><td><span class="yes" aria-label="あり"></span></td></tr>
+          <tr><th scope="row">有料の口コミの出品（販売）</th><td><span class="yes" aria-label="あり"></span></td><td><span class="yes" aria-label="あり"></span></td><td><span class="yes" aria-label="あり"></span></td></tr>
+          <tr><th scope="row">店舗の総額・規定</th><td><span class="yes" aria-label="あり"></span></td><td><span class="yes" aria-label="あり"></span></td><td><span class="yes" aria-label="あり"></span></td></tr>
+          <tr><th scope="row">総額・規定の比較表</th><td><span class="no" aria-label="なし"></span></td><td><span class="yes" aria-label="あり"></span></td><td><span class="yes" aria-label="あり"></span></td></tr>
+          <tr><th scope="row">会員向けガイドの全文</th><td><span class="no" aria-label="なし"></span></td><td><span class="no" aria-label="なし"></span></td><td><span class="yes" aria-label="あり"></span></td></tr>
+          <tr><th scope="row">担当者ごとの詳しいデータ</th><td><span class="no" aria-label="なし"></span></td><td><span class="no" aria-label="なし"></span></td><td><span class="yes" aria-label="あり"></span></td></tr>
+        </tbody>
+      </table>
+      <p class="single"><b>口コミは1件ずつ購入します</b>：有料の口コミは会員プランに関係なく、読みたい1件だけを購入します（¥100〜¥500・仮）。販売は運営が行い、代金の90%が投稿者に、10%が運営の手数料になります。ガイド記事も1本 ¥300（仮）から単品購入できます。</p>
+      <div class="memo legal" style="margin-top:16px"><b>要確認（弁護士・決済代行）</b>特商法の表示（販売者＝運営・解約・返金・支払時期）、自動更新の表示、口コミ販売の手数料と投稿者への支払い、決済審査の可否。</div>
+    </section>
+
+    <section class="signup" id="signup" aria-labelledby="h-sign">
+      <form id="sf" novalidate>
+        <h2 class="h2" id="h-sign">アカウントをつくる</h2>
+        <div class="plan-pick opt-rows" role="radiogroup" aria-label="プラン">
+          <label class="opt-row"><input type="radio" name="plan" value="free"><span>無料</span><span class="pr">¥0</span></label>
+          <label class="opt-row"><input type="radio" name="plan" value="std"><span>スタンダード</span><span class="pr">¥980／月</span></label>
+          <label class="opt-row"><input type="radio" name="plan" value="pre" checked><span>プレミアム</span><span class="pr">¥1,480／月</span></label>
+        </div>
+
+        <div class="fields">
+          <div><label class="field-l" for="em">メールアドレス<span class="req">必須</span></label><input class="input" id="em" type="email" autocomplete="email" placeholder="name@example.com" required aria-describedby="em-e"><p class="err" id="em-e"></p></div>
+          <div><label class="field-l" for="nn">ニックネーム<span class="opt">口コミに表示されます</span></label><input class="input" id="nn" autocomplete="nickname" placeholder="本名は使わないでください" required aria-describedby="nn-e"><p class="err" id="nn-e"></p></div>
+          <div><label class="field-l" for="pw">パスワード<span class="req">必須</span></label><div class="pw"><input class="input" id="pw" type="password" autocomplete="new-password" minlength="8" required aria-describedby="pw-h pw-e"><button type="button" aria-controls="pw" id="pwt">表示</button></div><p class="help" id="pw-h">8文字以上</p><p class="err" id="pw-e"></p></div>
+          <div class="pay-methods" id="pm"><fieldset><legend>お支払い方法</legend>
+            <div class="opt-rows">
+              <label class="opt-row"><input type="radio" name="pay" checked><span>クレジットカード<small>明細には「Hodoku」と表示（予定）</small></span></label>
+              <label class="opt-row"><input type="radio" name="pay"><span>BitCash<small>プリペイド型の電子マネー</small></span></label>
+            </div></fieldset></div>
+        </div>
+
+        <div class="privacy">
+          <h3>プライバシーへの配慮</h3>
+          <ul>
+            <li>メールの件名・通知・明細は、中立的なサービス名で表示します</li>
+            <li>退会時に、アカウントと投稿の扱いを選べます</li>
+            <li>アクセスログの保存期間は<a href="legal.html#privacy">プライバシーポリシー</a>に記載します</li>
+          </ul>
+        </div>
+        <p class="agree">登録すると、<a href="legal.html#terms">利用規約</a>・<a href="legal.html#privacy">プライバシーポリシー</a>に同意したものとみなします。本サービスは18歳以上の方が対象です。</p>
+        <div class="submit">
+          <button class="btn primary" type="submit" id="go">プレミアムで登録する</button>
+        </div>
+      </form>
+      <div class="done" role="status" tabindex="-1" id="done">
+        <h2>確認メールを送りました</h2>
+        <p>メール内のリンクを開くと登録が完了します。<br>件名は「Hodoku 登録の確認」です。</p>
+        <a class="btn quiet" href="index.html" style="margin-top:24px">トップへ戻る</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="site"><div class="in">
+  <div><a class="logo" href="index.html">Hodoku<small>ほどく</small></a><p style="margin-top:14px">予約の前に、確かめて選ぶための比較サイト。<br>18歳未満の方はご利用いただけません。</p></div>
+  <div>
+    <ul><li><a href="legal.html#terms">利用規約</a></li><li><a href="legal.html#privacy">プライバシーポリシー</a></li><li><a href="legal.html#tokushoho">特定商取引法に基づく表記</a></li><li><a href="legal.html#guideline">投稿ガイドライン</a></li><li><a href="legal.html#removal">削除・訂正の依頼</a></li><li><a href="legal.html#contact">お問い合わせ</a></li></ul>
+    <p>© 2026 Hodoku（デザイン用サンプル）</p>
+  </div>
+</div></footer>
+<script src="assets/hodoku.js"></script>
+<script>
+(() => {
+  const f = document.getElementById('sf'), go = document.getElementById('go'), pm = document.getElementById('pm');
+  const names = {free: '無料で登録する', std: 'スタンダードで登録する', pre: 'プレミアムで登録する'};
+  const upd = () => { const v = f.plan.value; go.textContent = names[v]; pm.hidden = v === 'free'; };
+  f.addEventListener('change', e => { if (e.target.name === 'plan') upd(); });
+  document.getElementById('pwt').addEventListener('click', e => {
+    const i = document.getElementById('pw'), show = i.type === 'password';
+    i.type = show ? 'text' : 'password'; e.currentTarget.textContent = show ? '隠す' : '表示';
+  });
+  const check = (id, ok, msg) => { const i = document.getElementById(id); i.setAttribute('aria-invalid', String(!ok)); document.getElementById(id + '-e').textContent = ok ? '' : msg; return ok; };
+  f.addEventListener('submit', e => {
+    e.preventDefault();
+    const em = f.em.value.trim(), nn = f.nn.value.trim(), pw = f.pw.value;
+    const ok = [
+      check('em', /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em), em ? 'メールアドレスの形式を確認してください（例：name@example.com）' : 'メールアドレスを入力してください'),
+      check('nn', nn.length > 0, 'ニックネームを入力してください'),
+      check('pw', pw.length >= 8, `パスワードは8文字以上にしてください（いま${pw.length}文字）`),
+    ];
+    const first = ok.indexOf(false);
+    if (first >= 0) { f.querySelectorAll('.input')[first].focus(); return; }
+    go.disabled = true; go.textContent = '送信しています…';
+    hodokuApi('/auth/register', {body: {email: em, nickname: nn, password: pw}})
+      .then(() => { document.body.classList.add('sent'); document.getElementById('done').focus(); })
+      .catch(err => {
+        go.disabled = false; upd();
+        if (err.code === 'email_taken') check('em', false, 'このメールアドレスは既に登録されています');
+        else if (err.code === 'nickname_taken' || err.code === 'unsafe_nickname') check('nn', false, err.message);
+        else if (err.code === 'weak_password') check('pw', false, err.message);
+        else alert(err.message);
+      });
+  });
+  ['em', 'nn', 'pw'].forEach(id => document.getElementById(id).addEventListener('input', e => { if (e.target.getAttribute('aria-invalid') === 'true') { e.target.removeAttribute('aria-invalid'); document.getElementById(id + '-e').textContent = ''; } }));
+  upd();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hodoku｜口コミを書く</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/hodoku.css">
+<style>
+.form-wrap{max-width:640px;margin:0 auto}
+.target{font-size:13px;color:var(--fuji-ink);margin-top:6px}
+.progress{display:flex;align-items:center;gap:12px;margin-top:20px;font-size:12px;color:var(--fuji-ink)}
+.progress .track{flex:1;height:2px;background:var(--suna);position:relative}
+.progress .track i{position:absolute;inset:0 auto 0 0;width:var(--p,0%);background:var(--suou);transition:width .4s cubic-bezier(.16,1,.3,1)}
+.q{padding:28px 0;border-bottom:1px solid var(--suna)}
+.q:first-of-type{border-top:1px solid var(--sumi)}
+.q legend,.q .ql{display:block;font:700 17px/1.6 var(--serif);letter-spacing:.06em;margin-bottom:14px}
+.q .help{margin:-8px 0 14px}
+.q fieldset{border:0}
+.stars{display:grid;gap:12px}
+.stars .line{display:grid;gap:8px;font-size:14px}
+.stars .chips{flex-wrap:nowrap}
+@media (min-width:600px){.stars .line{grid-template-columns:10em 1fr;align-items:center;gap:12px}}
+.stars .chips{gap:6px}
+.stars .chip span{min-width:44px;justify-content:center;padding:0}
+.rules{margin-top:28px;padding:20px 22px;border:1px solid var(--suna);border-radius:18px;background:var(--kinu)}
+.rules h2{font:700 15px var(--serif);letter-spacing:.06em}
+.rules ul{list-style:none;margin-top:10px;font-size:13px;line-height:1.8;display:grid;gap:6px}
+.rules li{padding-left:16px;position:relative}
+.rules li::before{content:"";position:absolute;left:0;top:.85em;width:8px;height:1px;background:var(--suou)}
+.rules p{font-size:12px;color:var(--fuji-ink);margin-top:12px}
+.rules a{color:var(--suou)}
+.notice{display:grid;grid-template-columns:18px 1fr;gap:10px;font-size:12px;color:var(--fuji-ink);margin-top:20px;line-height:1.8}
+.notice svg{margin-top:3px}
+.confirm{margin-top:16px}
+.submit{display:grid;gap:10px;margin-top:24px}
+.form-error{display:none;margin-top:16px;padding:12px 16px;border-radius:12px;background:var(--suou-wash);color:var(--suou-deep);font-size:13px;font-weight:500}
+.form-error.show{display:block}
+.counter{text-align:right;font-size:12px;color:var(--fuji-ink);margin-top:6px;font-variant-numeric:tabular-nums}
+
+/* 公開設定（無料／有料） */
+.publish{margin-top:28px}
+.publish .opt-rows{border-top:1px solid var(--sumi)}
+.publish .opt-row{padding:16px 4px}
+.publish .opt-row .ttl{display:flex;align-items:center;gap:10px}
+.publish .opt-row .ttl b{font-weight:500}
+.publish .opt-row .ttl .kind{font-size:11px;line-height:1;padding:5px 9px;border-radius:999px}
+.publish .opt-row small{display:block;font-size:12px;color:var(--fuji-ink);margin-top:3px}
+.kind.free{border:1px solid var(--suna);color:var(--fuji-ink)}
+.kind.paid{border:1px solid var(--suou);color:var(--suou)}
+.paid-set{margin-top:4px;padding:16px 18px;border:1px solid var(--suna);border-radius:14px;background:var(--kinu)}
+.paid-set[hidden]{display:none}
+.paid-set .field-l{margin-bottom:10px}
+.payout{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;display:grid;gap:6px}
+.payout .r{display:flex;justify-content:space-between}
+.payout .r.net b{font:700 16px var(--serif);color:var(--suou)}
+.payout .v{font-variant-numeric:tabular-nums}
+.cond{margin-top:12px;font-size:12px;line-height:1.8;color:var(--fuji-ink)}
+.cond.block{color:var(--suou-deep);font-weight:500}
+.done{display:none;text-align:center;padding:40px 0 0}
+.done svg{margin:0 auto}
+.done h1{font:700 26px/1.5 var(--serif);margin-top:20px}
+.done p{font-size:14px;margin-top:12px;color:var(--fuji-ink)}
+.done .btn{margin-top:28px}
+body.sent form,body.sent .page-head{display:none}
+body.sent .done{display:block}
+.thread path{fill:none;stroke:var(--suou);stroke-width:1.4;stroke-linecap:round}
+@media (prefers-reduced-motion:no-preference){
+  body.sent .thread path{stroke-dasharray:500;stroke-dashoffset:500;animation:untie 2s .2s ease-out forwards}
+  @keyframes untie{to{stroke-dashoffset:0}}
+}
+@media (min-width:1024px){
+  .submit{grid-template-columns:1fr auto}
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html">Hodoku<small>ほどく</small></a>
+  <nav aria-label="メイン"><ul><li><a href="shops.html">店舗をさがす</a></li><li><a href="therapist.html" aria-current="page">口コミ</a></li><li><a href="guide.html">ガイド</a></li><li><a href="account.html">マイページ</a></li><li><a href="login.html">ログイン</a></li></ul></nav>
+  <button class="menu" aria-label="メニュー" type="button"><span></span></button>
+</header>
+
+<main class="wrap"><div class="form-wrap">
+  <div class="page-head" style="padding-bottom:20px">
+    <ol class="crumb"><li><a href="therapist.html" id="crumb-back">担当者の口コミ</a></li><li>口コミを書く</li></ol>
+    <h1>口コミを書く</h1>
+    <p class="target" id="target" style="margin-top:4px">担当者を読み込んでいます…</p>
+    <div class="progress"><span id="pg-t">0 / 7</span><span class="track" aria-hidden="true"><i id="pg"></i></span><span>選ぶだけ・約2分</span></div>
+  </div>
+
+  <form id="rv" novalidate>
+    <div class="q"><fieldset><legend>利用した時期<span class="req">必須</span></legend>
+      <div class="chips"><label class="chip"><input type="radio" name="when" value="this_month" required><span>今月</span></label><label class="chip"><input type="radio" name="when" value="last_month"><span>先月</span></label><label class="chip"><input type="radio" name="when" value="few_months_ago"><span>2〜3か月前</span></label></div>
+      <p class="err" data-for="when"></p></fieldset></div>
+
+    <div class="q"><fieldset><legend>コースの長さ<span class="req">必須</span></legend>
+      <div class="chips"><label class="chip"><input type="radio" name="len" value="60" required><span>60分</span></label><label class="chip"><input type="radio" name="len" value="90"><span>90分</span></label><label class="chip"><input type="radio" name="len" value="120"><span>120分以上</span></label></div>
+      <p class="err" data-for="len"></p></fieldset></div>
+
+    <div class="q"><fieldset><legend>NGの事前確認はありましたか<span class="req">必須</span></legend>
+      <div class="opt-rows">
+        <label class="opt-row"><input type="radio" name="ng" value="on_booking" required><span>予約時に確認があった</span></label>
+        <label class="opt-row"><input type="radio" name="ng" value="on_site"><span>当日、始まる前に確認があった</span></label>
+        <label class="opt-row"><input type="radio" name="ng" value="none"><span>確認はなかった</span></label>
+      </div>
+      <p class="err" data-for="ng"></p></fieldset></div>
+
+    <div class="q"><fieldset><legend>総額は事前の案内どおりでしたか<span class="req">必須</span></legend>
+      <div class="chips"><label class="chip"><input type="radio" name="total" value="matched" required><span>案内どおり</span></label><label class="chip"><input type="radio" name="total" value="slightly_off"><span>少し違った</span></label><label class="chip"><input type="radio" name="total" value="very_off"><span>大きく違った</span></label></div>
+      <p class="err" data-for="total"></p></fieldset></div>
+
+    <div class="q"><fieldset><legend>5段階でふり返る<span class="req">必須</span></legend>
+      <div class="stars">
+        <div class="line" role="radiogroup" aria-label="ていねいさ"><span>ていねいさ</span><div class="chips">
+          <label class="chip sm"><input type="radio" name="s1" value="1" required><span>1</span></label><label class="chip sm"><input type="radio" name="s1" value="2"><span>2</span></label><label class="chip sm"><input type="radio" name="s1" value="3"><span>3</span></label><label class="chip sm"><input type="radio" name="s1" value="4"><span>4</span></label><label class="chip sm"><input type="radio" name="s1" value="5"><span>5</span></label></div></div>
+        <div class="line" role="radiogroup" aria-label="会話の心地よさ"><span>会話の心地よさ</span><div class="chips">
+          <label class="chip sm"><input type="radio" name="s2" value="1" required><span>1</span></label><label class="chip sm"><input type="radio" name="s2" value="2"><span>2</span></label><label class="chip sm"><input type="radio" name="s2" value="3"><span>3</span></label><label class="chip sm"><input type="radio" name="s2" value="4"><span>4</span></label><label class="chip sm"><input type="radio" name="s2" value="5"><span>5</span></label></div></div>
+        <div class="line" role="radiogroup" aria-label="時間・約束の正確さ"><span>時間・約束の正確さ</span><div class="chips">
+          <label class="chip sm"><input type="radio" name="s3" value="1" required><span>1</span></label><label class="chip sm"><input type="radio" name="s3" value="2"><span>2</span></label><label class="chip sm"><input type="radio" name="s3" value="3"><span>3</span></label><label class="chip sm"><input type="radio" name="s3" value="4"><span>4</span></label><label class="chip sm"><input type="radio" name="s3" value="5"><span>5</span></label></div></div>
+      </div>
+      <p class="help" style="margin:10px 0 0">1がいちばん低く、5がいちばん高い評価です。</p>
+      <p class="err" data-for="s1"></p></fieldset></div>
+
+    <div class="q"><fieldset><legend>店舗から特典を受け取りましたか<span class="req">必須</span></legend>
+      <p class="help">割引・無料延長なども含みます。正直に答えても公開はされます。信頼度の表示に使います。</p>
+      <div class="chips"><label class="chip"><input type="radio" name="gift" value="no" required><span>受け取っていない</span></label><label class="chip"><input type="radio" name="gift" value="yes"><span>受け取った</span></label></div>
+      <p class="err" data-for="gift"></p></fieldset></div>
+
+    <div class="q">
+      <label class="ql" for="memo">口コミの本文<span class="opt">任意・1000字まで</span></label>
+      <textarea class="textarea" id="memo" name="memo" rows="6" maxlength="1000" data-count="cnt" placeholder="体験したことを、読む人の役に立つように書いてください。担当者や他の利用者が特定される内容は書かないでください。有料で販売する場合は120字以上が必要です。"></textarea>
+      <p class="counter" id="cnt" aria-live="polite">0 / 1000</p>
+    </div>
+
+    <div class="q publish" id="publish"><fieldset><legend>公開の設定<span class="req">必須</span></legend>
+      <div class="opt-rows">
+        <label class="opt-row"><input type="radio" name="pub" value="free" required checked><span class="ttl"><b>無料で公開する</b><span class="kind free">無料</span></span><small>だれでも全文を読めます。</small></label>
+        <label class="opt-row" id="paidOpt"><input type="radio" name="pub" value="paid"><span class="ttl"><b>有料で販売する</b><span class="kind paid">有料</span></span><small>読みたい人が1件ずつ購入します。販売価格の90%があなたの受け取りです。</small></label>
+      </div>
+      <p class="help" id="paidSoon" hidden>有料での口コミ販売は後日公開予定です。いまは無料での公開のみ受け付けています。</p>
+
+      <div class="paid-set" id="paidSet" hidden>
+        <label class="field-l" for="price">販売価格<span class="opt">運営が定めた価格帯から選べます</span></label>
+        <div class="chips" role="radiogroup" aria-label="販売価格">
+          <label class="chip sm"><input type="radio" name="price" value="100"><span>¥100</span></label>
+          <label class="chip sm"><input type="radio" name="price" value="200"><span>¥200</span></label>
+          <label class="chip sm"><input type="radio" name="price" value="300" checked><span>¥300</span></label>
+          <label class="chip sm"><input type="radio" name="price" value="500"><span>¥500</span></label>
+        </div>
+        <div class="payout" aria-live="polite">
+          <div class="r"><span>販売価格</span><span class="v" id="po-price">¥300</span></div>
+          <div class="r"><span>運営の手数料（10%）</span><span class="v" id="po-fee">−¥30</span></div>
+          <div class="r net"><span>あなたの受け取り</span><b class="v" id="po-net">¥270</b></div>
+        </div>
+        <p class="cond" id="cond">有料で販売するには、利用が確認できていること（利用確認済み）、店舗からの特典がないこと、本文が120字以上であることが必要です。受け取りは残高にたまり、¥1,000以上で出金できます。</p>
+      </div>
+      <p class="err" data-for="pub"></p>
+    </fieldset></div>
+
+    <section class="rules" aria-labelledby="h-rules">
+      <h2 id="h-rules">公開できない内容</h2>
+      <ul>
+        <li>規約で認められていない行為の記述や、それを示唆する表現</li>
+        <li>本名・顔写真・住所・私生活など、利用者や担当者が特定される情報</li>
+        <li>誹謗中傷や、根拠のない断定</li>
+        <li>ほかのサイトからの転載</li>
+        <li>18歳未満を連想させる表現</li>
+      </ul>
+      <p>困ったことや被害にあった場合は、口コミではなく<a href="legal.html#contact">相談窓口（非公開）</a>へ。</p>
+    </section>
+
+    <p class="notice"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#665E79" stroke-width="1.2" aria-hidden="true"><rect x="2.5" y="7" width="11" height="7.5" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg><span>投稿は運営が内容を確認してから公開します（目安：2〜3営業日）。ニックネームで表示され、メールアドレスは公開されません。</span></p>
+
+    <div class="opt-rows confirm"><label class="opt-row"><input type="checkbox" name="agree" required><span>投稿ガイドラインを確認しました<small><a href="legal.html#guideline">ガイドライン全文</a></small></span></label></div>
+    <p class="err" data-for="agree"></p>
+
+    <p class="form-error" id="fe" role="alert" tabindex="-1"></p>
+    <div class="submit">
+      <button class="btn primary" type="submit">審査に送る</button>
+      <button class="btn quiet" type="button" data-toast="下書きを保存しました（この端末のみ）">下書きを保存</button>
+    </div>
+    <div class="memo" style="margin-top:20px"><b>未決</b>審査日数（仮2〜3営業日）、類似文面で停止する基準、有料出品の審査基準（利用確認必須・特典あり不可・最低文字数）、投稿者への支払いの本人確認。</div>
+  </form>
+
+  <div class="done" role="status" tabindex="-1" id="done">
+    <svg class="thread" width="240" height="60" viewBox="0 0 240 60" aria-hidden="true"><path d="M0 34 C40 34 60 10 90 24 C112 34 104 52 86 46 C70 40 88 18 120 22 C160 28 200 40 240 30"/></svg>
+    <h1>審査に送りました</h1>
+    <p>公開されたら、登録のメールアドレスにお知らせします。<br>件名は「Hodokuからのお知らせ」です。</p>
+    <a class="btn quiet" id="done-back" href="therapist.html">口コミの一覧へ戻る</a>
+  </div>
+</div></main>
+
+<footer class="site"><div class="in">
+  <div><a class="logo" href="index.html">Hodoku<small>ほどく</small></a><p style="margin-top:14px">予約の前に、確かめて選ぶための比較サイト。<br>18歳未満の方はご利用いただけません。</p></div>
+  <div>
+    <ul><li><a href="legal.html#terms">利用規約</a></li><li><a href="legal.html#privacy">プライバシーポリシー</a></li><li><a href="legal.html#tokushoho">特定商取引法に基づく表記</a></li><li><a href="legal.html#guideline">投稿ガイドライン</a></li><li><a href="legal.html#removal">削除・訂正の依頼</a></li><li><a href="legal.html#contact">お問い合わせ</a></li></ul>
+    <p>© 2026 Hodoku（デザイン用サンプル）</p>
+  </div>
+</div></footer>
+<script src="assets/hodoku.js"></script>
+<script>
+(() => {
+  const slug = new URLSearchParams(location.search).get('slug');
+  if (!slug) { location.replace('shops.html'); return; }
+  window.hodokuMe.then(u => { if (!u) location.replace('login.html?next=' + encodeURIComponent(location.pathname + location.search)); });
+  hodokuApi(`/therapists/${encodeURIComponent(slug)}`).then(d => {
+    document.getElementById('target').textContent = `${d.therapist.name}・${d.therapist.shopName}`;
+    document.getElementById('crumb-back').textContent = `${d.therapist.name} の口コミ`;
+    document.getElementById('crumb-back').href = `therapist.html?slug=${encodeURIComponent(slug)}`;
+    document.getElementById('done-back').href = `therapist.html?slug=${encodeURIComponent(slug)}`;
+  }).catch(() => { document.getElementById('target').textContent = '担当者が見つかりません'; });
+  const f = document.getElementById('rv');
+
+  /* 有料販売は後日公開: 無効時は「有料で販売する」を隠し、無料のみ受け付ける */
+  window.hodokuFlags.then(flags => {
+    if (flags.salesEnabled) return;
+    const opt = document.getElementById('paidOpt');
+    const soon = document.getElementById('paidSoon');
+    if (opt) opt.hidden = true;
+    if (soon) soon.hidden = false;
+    const free = f.querySelector('[name=pub][value=free]');
+    if (free) free.checked = true;
+    const paidSetEl = document.getElementById('paidSet');
+    if (paidSetEl) paidSetEl.hidden = true;
+  });
+
+  const groups = ['when', 'len', 'ng', 'total', 's1', 'gift', 'agree'];
+  const filled = g => g === 's1' ? ['s1', 's2', 's3'].every(n => f.querySelector(`[name=${n}]:checked`)) : !!f.querySelector(`[name=${g}]:checked`);
+  const msg = {when: '利用した時期を選んでください', len: 'コースの長さを選んでください', ng: '事前確認について選んでください', total: '総額について選んでください', s1: '3つの項目すべてを選んでください', gift: '特典の有無を選んでください', agree: 'ガイドラインの確認にチェックしてください', pub: '本文が120字に足りないため、有料では販売できません。無料に切り替えるか本文を足してください'};
+  const pg = () => {
+    const n = groups.filter(g => g !== 'agree' && filled(g)).length + (f.memo.value ? 1 : 0);
+    const tot = 7;
+    document.getElementById('pg-t').textContent = `${Math.min(n, tot)} / ${tot}`;
+    document.getElementById('pg').style.setProperty('--p', Math.min(n, tot) / tot * 100 + '%');
+  };
+
+  /* 公開設定：有料の表示と受け取り額の計算 */
+  const paidSet = document.getElementById('paidSet'), cond = document.getElementById('cond');
+  const yen = v => '¥' + v.toLocaleString('ja-JP');
+  const paidOK = () => {
+    /* モックの前提：利用確認済み・特典なし。実際はサーバ判定 */
+    const gift = f.querySelector('[name=gift]:checked');
+    const giftTaken = gift && gift.value === 'yes';
+    const longEnough = f.memo.value.length >= 120;
+    return {ok: !giftTaken && longEnough, giftTaken, longEnough};
+  };
+  const syncPublish = () => {
+    const paid = f.querySelector('[name=pub]:checked').value === 'paid';
+    paidSet.hidden = !paid;
+    if (!paid) return;
+    const p = +f.querySelector('[name=price]:checked').value;
+    document.getElementById('po-price').textContent = yen(p);
+    document.getElementById('po-fee').textContent = '−' + yen(Math.round(p * 0.1));
+    document.getElementById('po-net').textContent = yen(Math.round(p * 0.9));
+    const s = paidOK();
+    if (s.giftTaken) { cond.textContent = '店舗から特典を受け取った口コミは有料で販売できません。無料で公開してください。'; cond.className = 'cond block'; }
+    else if (!s.longEnough) { cond.textContent = `有料の販売には本文が120字以上必要です（いま${f.memo.value.length}字）。`; cond.className = 'cond block'; }
+    else { cond.textContent = '利用確認済み・特典なし・120字以上の条件を満たしています。受け取りは残高にたまり、¥1,000以上で出金できます。'; cond.className = 'cond'; }
+  };
+
+  f.addEventListener('change', e => {
+    const g = e.target.name.replace(/s[23]/, 's1');
+    const er = f.querySelector(`.err[data-for=${g}]`);
+    if (er && filled(g)) er.textContent = '';
+    if (['pub', 'price', 'gift'].includes(e.target.name)) syncPublish();
+    pg();
+  });
+  f.memo.addEventListener('input', () => { pg(); if (!paidSet.hidden) syncPublish(); });
+  f.addEventListener('submit', e => {
+    e.preventDefault();
+    const miss = groups.filter(g => !filled(g));
+    miss.forEach(g => f.querySelector(`.err[data-for=${g}]`).textContent = msg[g]);
+    const fe = document.getElementById('fe');
+    const paid = f.querySelector('[name=pub]:checked').value === 'paid';
+    const pubBad = paid && !paidOK().ok;
+    if (pubBad) f.querySelector('.err[data-for=pub]').textContent = msg.pub;
+    if (miss.length || pubBad) {
+      const cnt = miss.length + (pubBad ? 1 : 0);
+      fe.textContent = `見直しが必要な項目が${cnt}つあります。赤い文字の箇所を確認してください。`;
+      fe.classList.add('show');
+      const firstKey = miss[0] || 'pub';
+      (f.querySelector(`.err[data-for=${firstKey}]`).closest('.q') || fe).scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center'});
+      return;
+    }
+    fe.classList.remove('show');
+    const val = n => f.querySelector(`[name=${n}]:checked`).value;
+    const body = {
+      therapistSlug: slug, visitedWhen: val('when'), courseMinutes: +val('len'), ngPrecheck: val('ng'), totalMatched: val('total'),
+      scoreCare: +val('s1'), scoreComfort: +val('s2'), scorePunctual: +val('s3'), giftReceived: val('gift') === 'yes', body: f.memo.value,
+      listing: paid ? {kind: 'paid', priceYen: +val('price')} : {kind: 'free'},
+    };
+    const btn = f.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '送信しています…';
+    hodokuApi('/reviews', {body}).then(() => {
+      document.body.classList.add('sent');
+      const d = document.getElementById('done');
+      if (paid) d.querySelector('p').innerHTML = '審査を通ると、有料の口コミとして公開されます。<br>売れると受け取り分がマイページの残高に反映されます。';
+      window.scrollTo(0, 0);
+      d.focus();
+    }).catch(err => {
+      btn.disabled = false; btn.textContent = '審査に送る';
+      if (err.status === 401) { location.href = 'login.html?next=' + encodeURIComponent(location.pathname + location.search); return; }
+      fe.textContent = err.message; fe.classList.add('show'); fe.focus();
+    });
+  });
+  syncPublish();
+  pg();
+})();
+</script>
+</body>
+</html>

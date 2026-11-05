@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hodoku｜予約の前に、確かめて選ぶ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/hodoku.css">
+<style>
+:root{
+  --washi:#F2EEE9;   /* 灰白の和紙。前回のアイボリーより冷たく */
+  --sumi:#2B2230;    /* 宵の墨 */
+  --suou:#8E3B46;    /* 蘇芳：糸とCTAだけに使う */
+  --fuji:#7D7590;    /* 藤鼠：補助テキスト */
+  --suna:#D6CCC0;    /* 砂：罫線 */
+  --kinu:#FBFAF7;    /* 絹：カード面 */
+  --serif:"Shippori Mincho B1","BIZ UDPMincho",serif;
+  --sans:"Noto Sans JP",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--washi);color:var(--sumi);font:15px/1.9 var(--sans);letter-spacing:.04em;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--suou);outline-offset:3px;border-radius:4px}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;max-width:1200px;margin:0 auto}
+.logo{font:700 22px/1 var(--serif);letter-spacing:.12em;display:flex;align-items:baseline;gap:10px;text-decoration:none}
+.logo small{font:500 11px var(--sans);color:var(--fuji);letter-spacing:.2em}
+nav ul{display:none;list-style:none;gap:32px;font-size:14px}
+nav a{text-decoration:none}
+.menu{width:40px;height:40px;border:1px solid var(--suna);border-radius:50%;background:none;display:grid;place-items:center}
+.menu span{display:block;width:16px;height:1px;background:var(--sumi);box-shadow:0 5px 0 var(--sumi)}
+
+/* hero */
+.hero{position:relative;padding:40px 24px 56px;max-width:1200px;margin:0 auto}
+.hero h1{font:700 34px/1.5 var(--serif);letter-spacing:.06em}
+.hero p.lead{margin-top:20px;color:#4a4050;max-width:34em}
+.thread{display:block;width:100%;height:90px;margin:28px 0 8px}
+.thread path{fill:none;stroke:var(--suou);stroke-width:1.4;stroke-linecap:round}
+.check{background:var(--kinu);border:1px solid var(--suna);border-radius:18px;padding:22px 22px 8px}
+.check h2{font:700 15px var(--serif);letter-spacing:.08em;margin-bottom:6px}
+.check ol{list-style:none;counter-reset:c}
+.check li{counter-increment:c;display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:baseline;padding:14px 0;border-top:1px solid #E7DFD5}
+.check li:first-child{border-top:0}
+.check li::before{content:counter(c);font:500 13px var(--serif);color:var(--suou)}
+.check b{font-weight:500}
+.check em{grid-column:2;margin-top:-6px;font-style:normal;font-size:12px;color:var(--fuji)}
+.cta{display:flex;flex-direction:column;gap:12px;margin-top:28px}
+.btn{display:inline-flex;justify-content:center;align-items:center;height:52px;padding:0 28px;border-radius:999px;font:500 15px var(--sans);letter-spacing:.08em;text-decoration:none}
+.btn.primary{background:var(--suou);color:#fff}
+.btn.quiet{border:1px solid var(--sumi)}
+
+/* search */
+.search{background:var(--sumi);color:var(--washi);border-radius:24px;margin:0 16px;padding:28px 22px}
+.search h2{font:700 20px/1.6 var(--serif);letter-spacing:.06em}
+.search .row{display:grid;gap:10px;margin-top:18px}
+.field{display:flex;justify-content:space-between;align-items:center;white-space:nowrap;gap:12px;height:52px;padding:0 18px;border:1px solid #4A3F50;border-radius:12px;font-size:14px;color:#D9D1DE}
+a.field{text-decoration:none}a.field:hover{border-color:#7A6E80}
+.field span{color:#A79FB3;font-size:12px}
+.search .btn{margin-top:6px;width:100%}
+
+section.block{padding:64px 0 0}
+.block h2.t{font:700 24px/1.5 var(--serif);letter-spacing:.06em}
+.block p.s{color:var(--fuji);font-size:13px;margin-top:6px}
+
+/* compare */
+.cmp{margin-top:24px;border-top:1px solid var(--sumi)}
+.shop{display:grid;grid-template-columns:1fr auto;gap:4px 16px;padding:20px 0;border-bottom:1px solid var(--suna)}
+.shop h3 a{text-decoration:none}.shop h3 a:hover{text-decoration:underline}
+.shop h3{font:700 17px var(--serif);letter-spacing:.06em}
+.shop .area{font-size:12px;color:var(--fuji)}
+.shop .total{grid-row:span 2;text-align:right;font:700 22px var(--serif)}
+.shop .total small{display:block;font:400 11px var(--sans);color:var(--fuji)}
+.facts{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:12px}
+.facts span{display:inline-flex;gap:6px;align-items:center}
+.facts i{width:6px;height:6px;border-radius:50%;background:var(--suou);display:inline-block}
+.facts i.o{background:none;border:1px solid var(--fuji)}
+.note{font-size:11px;color:var(--fuji);margin-top:10px}
+
+/* voices */
+.voices{display:grid;gap:16px;margin-top:24px}
+.voice{background:var(--kinu);border-radius:18px;padding:22px;border:1px solid #E7DFD5}
+.voice q{display:block;font:500 16px/1.9 var(--serif);quotes:none}
+.voice footer{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:12px;color:var(--fuji)}
+.trust{font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--suou);color:var(--suou)}
+
+/* guides */
+.guides{display:grid;gap:0;margin-top:20px}
+.guide{display:grid;grid-template-columns:88px 1fr;gap:16px;padding:16px 0;border-bottom:1px solid var(--suna);text-decoration:none}
+.tex{aspect-ratio:1;border-radius:12px;background:
+  repeating-linear-gradient(115deg,rgba(255,255,255,.18) 0 1px,transparent 1px 7px),
+  linear-gradient(150deg,#CFC3B4,#9E8F98 60%,#5B4A5E)}
+.tex.b{background:repeating-linear-gradient(25deg,rgba(255,255,255,.16) 0 1px,transparent 1px 9px),linear-gradient(160deg,#E3D9CF,#B79A97 70%,#8E3B46)}
+.tex.c{background:repeating-linear-gradient(80deg,rgba(255,255,255,.14) 0 1px,transparent 1px 6px),linear-gradient(140deg,#D6CCC0,#7D7590)}
+.guide h3{font:700 15px/1.7 var(--serif);letter-spacing:.04em}
+.guide span{font-size:12px;color:var(--fuji)}
+.lock{color:var(--suou)}
+
+/* membership */
+.member{margin:64px 16px 0;border:1px solid var(--sumi);border-radius:24px;padding:28px 22px}
+.member h2{font:700 22px/1.6 var(--serif)}
+.plans{display:grid;gap:12px;margin:20px 0}
+.plan{display:flex;justify-content:space-between;align-items:baseline;padding:14px 0;border-top:1px solid var(--suna)}
+.plan b{font:700 20px var(--serif)}
+.plan small{font-size:12px;color:var(--fuji)}
+
+footer.site{margin-top:72px;background:var(--sumi);color:#CFC6D4;padding:40px 24px 32px;font-size:12px}
+footer.site .logo{color:var(--washi)}
+footer.site ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:24px 0}
+footer.site a{text-decoration:none}
+footer.site p{color:#9A90A3;line-height:1.8}
+
+@media (min-width:1024px){
+  body{font-size:16px}
+  nav ul{display:flex}.menu{display:none}
+  header{padding:28px 48px}
+  .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:72px;align-items:end;padding:72px 48px 96px}
+  .hero h1{font-size:52px;line-height:1.45}
+  .thread{position:absolute;left:48px;width:calc(100% - 96px);bottom:-8px;height:90px;margin:0;z-index:-1;opacity:.9}
+  .cta{flex-direction:row}
+  .check li{grid-template-columns:28px 1fr auto}.check em{grid-column:auto;margin:0}
+  .search{max-width:1200px;margin:0 auto;padding:40px 48px;display:grid;grid-template-columns:240px 1fr;gap:40px;align-items:center}
+  .search .row{grid-template-columns:repeat(3,minmax(0,1fr)) auto;margin:0}
+  .search .btn{margin:0}
+  .wrap{padding:0 48px}
+  section.block{padding-top:104px}
+  .block h2.t{font-size:32px}
+  .split{display:grid;grid-template-columns:280px 1fr;gap:64px}
+  .cmp .shop{grid-template-columns:1.2fr 2fr auto}
+  .cmp .facts{grid-column:auto;margin:0}
+  .shop .total{grid-row:auto}
+  .voices{grid-template-columns:1.4fr 1fr 1fr}
+  .voice:first-child q{font-size:20px}
+  .guides{grid-template-columns:repeat(3,1fr);gap:32px}
+  .guide{grid-template-columns:1fr;border:0}
+  .tex{aspect-ratio:4/3}
+  .member{max-width:1104px;margin:104px auto 0;display:grid;grid-template-columns:1fr 1fr;gap:48px;padding:48px}
+  footer.site{padding:56px 48px 40px}
+  footer.site .in{display:grid;grid-template-columns:1fr 2fr;max-width:1104px;margin:0 auto}
+  footer.site ul{grid-template-columns:repeat(4,auto);margin:0}
+}
+@media (prefers-reduced-motion:no-preference){
+  .thread path{stroke-dasharray:900;stroke-dashoffset:900;animation:untie 2.4s .3s ease-out forwards}
+  @keyframes untie{to{stroke-dashoffset:0}}
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html">Hodoku<small>ほどく</small></a>
+  <nav aria-label="メイン"><ul><li><a href="shops.html">店舗をさがす</a></li><li><a href="therapist.html">口コミ</a></li><li><a href="guide.html">ガイド</a></li><li><a href="account.html">マイページ</a></li><li><a href="login.html">ログイン</a></li></ul></nav>
+  <button class="menu" aria-label="メニュー" type="button"><span></span></button>
+</header>
+
+<main>
+<section class="hero">
+  <div>
+    <h1>ほどける時間を、<br>確かめてから選ぶ。</h1>
+    <p class="lead">料金の総額、キャンセルの規定、実際に利用した人の声。予約の前に知っておきたいことを、ひとつの場所で落ち着いて比べられます。</p>
+    <div class="cta">
+      <a class="btn primary" href="shops.html">エリアから店舗を探す</a>
+      <a class="btn quiet" href="guide.html">はじめての方へのガイドを読む</a>
+    </div>
+  </div>
+  <svg class="thread" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 70 C120 70 160 30 210 52 C250 70 230 100 200 88 C170 76 200 40 250 46 C330 56 420 96 560 80 C720 62 820 40 960 58 C1060 70 1140 60 1200 54"/>
+  </svg>
+  <div class="check" aria-label="予約前の確認">
+    <h2>予約の前に、ここだけは</h2>
+    <ol>
+      <li><b>総額はいくらになるか</b><em>指名料・交通費込み</em></li>
+      <li><b>NG事項を事前に伝えられるか</b><em>伝え方の例あり</em></li>
+      <li><b>困ったときの窓口があるか</b><em>店舗ごとに掲載</em></li>
+      <li><b>キャンセル・変更の規定</b><em>何時間前まで無料か</em></li>
+    </ol>
+  </div>
+</section>
+
+<section class="search" aria-label="店舗検索">
+  <h2>近くの店舗を、<br>条件で比べる</h2>
+  <div class="row">
+    <a class="field" href="shops.html">エリア <span>東京・渋谷 など</span></a>
+    <a class="field" href="shops.html">予算（総額） <span>〜20,000円</span></a>
+    <a class="field" href="shops.html">はじめて歓迎 <span>指定なし</span></a>
+    <a class="btn primary" href="compare.html">この条件で比べる</a>
+  </div>
+</section>
+
+<div class="wrap">
+<section class="block split">
+  <div><h2 class="t">総額で比べる</h2><p class="s">表示価格ではなく、支払う金額で並べています。</p></div>
+  <div class="cmp">
+    <div class="shop"><div><h3><a href="shop.html">Atelier Lumen</a></h3><div class="area">東京・恵比寿</div></div><div class="total">¥18,400<small>90分の総額</small></div>
+      <div class="facts"><span><i></i>NG事前確認</span><span><i></i>相談窓口</span><span><i class="o"></i>前日まで変更無料</span></div></div>
+    <div class="shop"><div><h3>Maison Soie</h3><div class="area">東京・中目黒</div></div><div class="total">¥16,900<small>90分の総額</small></div>
+      <div class="facts"><span><i></i>NG事前確認</span><span><i class="o"></i>相談窓口なし</span><span><i></i>3時間前まで変更無料</span></div></div>
+    <div class="shop"><div><h3>Salon Veil</h3><div class="area">東京・代官山</div></div><div class="total">¥15,200<small>90分の総額</small></div>
+      <div class="facts"><span><i></i>NG事前確認</span><span><i></i>相談窓口</span><span><i class="o"></i>当日変更は50%</span></div></div>
+    <p class="note">掲載中の店舗名・料金はデザイン用の架空のサンプルです。 <a href="compare.html">内訳を表で比べる</a></p>
+  </div>
+</section>
+
+<section class="block">
+  <h2 class="t">利用した人の声</h2><p class="s">投稿は公開前に審査しています。利用を確認できた投稿には印がつきます。</p>
+  <div class="voices">
+    <article class="voice"><q>はじめてで緊張していましたが、事前にNGを聞いてもらえたので安心できました。時間もゆったりで、帰り道まで穏やかでした。</q><footer><span>akane・30代・Atelier Lumen</span><span class="trust">利用確認済み</span></footer></article>
+    <article class="voice"><q>総額が予約前に分かったのがよかったです。</q><footer><span>mio・20代</span><span class="trust">利用確認済み</span></footer></article>
+    <article class="voice"><q>当日の変更にも丁寧に対応してもらえました。</q><footer><span>hana・40代</span><span class="trust">利用確認済み</span></footer></article>
+  </div>
+</section>
+
+<section class="block" id="guides">
+  <h2 class="t">はじめての方へのガイド</h2>
+  <div class="guides">
+    <a class="guide" href="guide.html"><div class="tex"></div><div><h3>予約前に確認したい4つのこと</h3><span>無料・5分</span></div></a>
+    <a class="guide" href="guide.html"><div class="tex b"></div><div><h3>NGの伝え方：そのまま使える文例</h3><span>無料・4分</span></div></a>
+    <a class="guide" href="guide.html"><div class="tex c"></div><div><h3>困ったときに相談できる先と手順</h3><span class="lock">会員向け・8分</span></div></a>
+  </div>
+</section>
+</div>
+
+<section class="member">
+  <div><h2>くわしい比較と全文ガイドは、会員向けです</h2><p class="s" style="margin-top:10px;color:var(--fuji);font-size:13px">登録はメールアドレスとニックネームだけ。いつでも解約できます。</p></div>
+  <div>
+    <div class="plans">
+      <div class="plan"><span>スタンダード<br><small>口コミ全文・比較表</small></span><b>¥980<small>／月</small></b></div>
+      <div class="plan"><span>プレミアム<br><small>全ガイド・担当者データ</small></span><b>¥1,480<small>／月</small></b></div>
+    </div>
+    <a class="btn primary" style="width:100%" href="membership.html">メールアドレスで登録する</a>
+  </div>
+</section>
+</main>
+
+<footer class="site"><div class="in">
+  <div><a class="logo" href="index.html">Hodoku<small>ほどく</small></a><p style="margin-top:14px">予約の前に、確かめて選ぶための比較サイト。<br>18歳未満の方はご利用いただけません。</p></div>
+  <div>
+    <ul><li><a href="legal.html#terms">利用規約</a></li><li><a href="legal.html#privacy">プライバシーポリシー</a></li><li><a href="legal.html#tokushoho">特定商取引法に基づく表記</a></li><li><a href="legal.html#guideline">投稿ガイドライン</a></li><li><a href="legal.html#removal">削除・訂正の依頼</a></li><li><a href="legal.html#contact">お問い合わせ</a></li></ul>
+    <p>© 2026 Hodoku（デザイン用サンプル）</p>
+  </div>
+</div></footer>
+<script src="assets/hodoku.js"></script>
+</body></html>

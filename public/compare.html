@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hodoku｜総額と規定を比べる</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/hodoku.css">
+<style>
+.tools{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.tools .chips{gap:6px}
+.tools label.s{font-size:12px;color:var(--fuji-ink);display:flex;align-items:center;gap:8px}
+.tools .select{width:auto;padding:8px 36px 8px 14px;font-size:13px;border-radius:999px;background-position:right 14px center}
+.scroll{overflow-x:auto;margin:0 -24px;padding:0 24px;scrollbar-width:thin;scrollbar-color:var(--suna) transparent}
+table.cmp{border-collapse:separate;border-spacing:0;min-width:880px;width:100%;font-size:13px}
+.cmp th,.cmp td{padding:16px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-variant-numeric:tabular-nums}
+.cmp thead th{font-size:11px;font-weight:500;color:var(--fuji-ink);letter-spacing:.08em;border-bottom:1px solid var(--sumi);white-space:nowrap;vertical-align:bottom;padding-top:0}
+.cmp thead th button{all:unset;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.cmp thead th button:focus-visible{outline:2px solid var(--suou);outline-offset:3px}
+.cmp thead th[aria-sort] button::after{content:"";border:4px solid transparent;border-top-color:currentColor;margin-top:4px}
+.cmp thead th[aria-sort="ascending"]{color:var(--suou)}
+.cmp tbody th{position:sticky;left:0;background:var(--washi);z-index:1;min-width:170px;font-weight:400;box-shadow:1px 0 0 var(--line)}
+.cmp tbody th a{font:700 16px/1.4 var(--serif);letter-spacing:.06em;text-decoration:none;display:block}
+.cmp tbody th a:hover{text-decoration:underline}
+.cmp tbody th small{display:block;font-size:11px;color:var(--fuji-ink);margin-top:2px}
+.cmp .total{font:700 20px var(--serif);color:var(--suou);white-space:nowrap}
+.cmp .sub{display:block;font-size:11px;color:var(--fuji-ink);margin-top:2px;white-space:nowrap}
+.cmp td.n{white-space:nowrap}
+.cmp tbody tr:hover th,.cmp tbody tr:hover td{background:var(--kinu)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;margin-top:14px;color:var(--fuji-ink)}
+.note{font-size:11px;color:var(--fuji-ink);margin-top:8px;line-height:1.8}
+@media (min-width:1024px){
+  .scroll{margin:0;padding:0}
+  .cmp tbody th{min-width:200px}
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html">Hodoku<small>ほどく</small></a>
+  <nav aria-label="メイン"><ul><li><a href="shops.html" aria-current="page">店舗をさがす</a></li><li><a href="therapist.html">口コミ</a></li><li><a href="guide.html">ガイド</a></li><li><a href="account.html">マイページ</a></li><li><a href="login.html">ログイン</a></li></ul></nav>
+  <button class="menu" aria-label="メニュー" type="button"><span></span></button>
+</header>
+
+<main class="wrap">
+  <div class="page-head">
+    <ol class="crumb"><li><a href="index.html">トップ</a></li><li><a href="shops.html">渋谷・恵比寿・代官山</a></li><li>比較表</li></ol>
+    <h1>総額と規定を、表で比べる</h1>
+    <p>交通費・指名料を含めた総額と、安全への対応・キャンセル規定を横に並べています。各店の公式情報をもとに運営が作成しています。</p>
+  </div>
+
+  <div class="tools">
+    <div class="chips" role="radiogroup" aria-label="コースの長さ">
+      <label class="chip sm"><input type="radio" name="m" value="60"><span>60分</span></label>
+      <label class="chip sm"><input type="radio" name="m" value="90" checked><span>90分</span></label>
+      <label class="chip sm"><input type="radio" name="m" value="120"><span>120分</span></label>
+    </div>
+    <span class="small muted" id="cap" aria-live="polite">4店舗・90分の総額で比較</span>
+  </div>
+
+  <div class="scroll" tabindex="0" role="region" aria-label="比較表（横にスクロールできます）">
+  <table class="cmp" id="t">
+    <thead><tr>
+      <th scope="col">店舗</th>
+      <th scope="col" aria-sort="ascending" data-k="total"><button type="button">総額</button></th>
+      <th scope="col">内訳</th>
+      <th scope="col" data-k="ext"><button type="button">延長30分</button></th>
+      <th scope="col">ホテル代目安</th>
+      <th scope="col">NG確認</th>
+      <th scope="col">相談窓口</th>
+      <th scope="col">無料で変更</th>
+      <th scope="col">当日キャンセル</th>
+      <th scope="col" data-k="rv"><button type="button">口コミ・信頼度</button></th>
+    </tr></thead>
+    <tbody>
+      <tr data-base="10400" data-step="4000" data-fixed="4000" data-ext="5000" data-rv="48">
+        <th scope="row"><a href="shop.html">Atelier Lumen</a><small>恵比寿・出張／ホテル</small></th>
+        <td><span class="total">—</span></td><td class="n"><span class="c">—</span><span class="sub">指名2,000・交通2,000</span></td>
+        <td class="n">¥5,000</td><td class="n">¥3,800前後</td>
+        <td><span class="dot">予約時</span></td><td><span class="dot">12〜29時</span></td><td><span class="dot">前日まで</span></td><td class="n">30〜50%</td>
+        <td><span class="trust">信頼度 高</span><span class="sub">48件</span></td>
+      </tr>
+      <tr data-base="9900" data-step="3500" data-fixed="3500" data-ext="6000" data-rv="23">
+        <th scope="row"><a href="shop.html">Maison Soie</a><small>恵比寿・出張のみ</small></th>
+        <td><span class="total">—</span></td><td class="n"><span class="c">—</span><span class="sub">指名2,000・交通1,500</span></td>
+        <td class="n">¥6,000</td><td class="n">自宅のみ</td>
+        <td><span class="dot">予約時</span></td><td><span class="dot no">なし</span></td><td><span class="dot">3時間前まで</span></td><td class="n">50%</td>
+        <td><span class="trust mid">信頼度 中</span><span class="sub">23件</span></td>
+      </tr>
+      <tr data-base="12300" data-step="4500" data-fixed="3000" data-ext="5500" data-rv="31">
+        <th scope="row"><a href="shop.html">Kasumi Room</a><small>渋谷・ホテル</small></th>
+        <td><span class="total">—</span></td><td class="n"><span class="c">—</span><span class="sub">指名2,000・交通1,000</span></td>
+        <td class="n">¥5,500</td><td class="n">¥4,000前後</td>
+        <td><span class="dot">予約時</span></td><td><span class="dot">24時間</span></td><td><span class="dot">前日まで</span></td><td class="n">30%</td>
+        <td><span class="trust">信頼度 高</span><span class="sub">31件</span></td>
+      </tr>
+      <tr data-base="9400" data-step="3800" data-fixed="2000" data-ext="5000" data-rv="9">
+        <th scope="row"><a href="shop.html">Salon Veil</a><small>代官山・ホテルのみ</small></th>
+        <td><span class="total">—</span></td><td class="n"><span class="c">—</span><span class="sub">指名2,000・交通0</span></td>
+        <td class="n">¥5,000</td><td class="n">¥3,500前後</td>
+        <td><span class="dot">予約時</span></td><td><span class="dot">18〜26時</span></td><td><span class="dot">前日まで</span></td><td class="n">50%</td>
+        <td><span class="trust low">要確認</span><span class="sub">9件</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="legend"><span class="dot">対応あり</span><span class="dot no">対応なし・条件つき</span></div>
+  <p class="note">店舗名・金額はすべて架空のサンプルです。総額は「コース＋指名料＋交通費」。ホテル代は利用者が直接支払うため総額に含めていません。最新の情報は各店舗の公式サイトでご確認ください。</p>
+  <div class="memo" style="margin-top:20px;max-width:560px"><b>会員向け</b>比較表はスタンダード会員以上で利用できる想定です。無料会員には3店舗目以降をぼかして表示します（未実装）。</div>
+</main>
+
+<footer class="site"><div class="in">
+  <div><a class="logo" href="index.html">Hodoku<small>ほどく</small></a><p style="margin-top:14px">予約の前に、確かめて選ぶための比較サイト。<br>18歳未満の方はご利用いただけません。</p></div>
+  <div>
+    <ul><li><a href="legal.html#terms">利用規約</a></li><li><a href="legal.html#privacy">プライバシーポリシー</a></li><li><a href="legal.html#tokushoho">特定商取引法に基づく表記</a></li><li><a href="legal.html#guideline">投稿ガイドライン</a></li><li><a href="legal.html#removal">削除・訂正の依頼</a></li><li><a href="legal.html#contact">お問い合わせ</a></li></ul>
+    <p>© 2026 Hodoku（デザイン用サンプル）</p>
+  </div>
+</div></footer>
+<script src="assets/hodoku.js"></script>
+<script>
+(() => {
+  const tb = document.querySelector('#t tbody'), rows = [...tb.rows], yen = v => '¥' + v.toLocaleString('ja-JP');
+  let key = 'total', m = 90;
+  const calc = r => +r.dataset.base + (m - 60) / 30 * +r.dataset.step;
+  const render = () => {
+    rows.forEach(r => { const c = calc(r); r.dataset.total = c + +r.dataset.fixed; r.querySelector('.total').textContent = yen(+r.dataset.total); r.querySelector('.c').textContent = 'コース' + c.toLocaleString('ja-JP'); });
+    rows.slice().sort((a, b) => key === 'rv' ? b.dataset.rv - a.dataset.rv : a.dataset[key] - b.dataset[key]).forEach(r => tb.append(r));
+    document.querySelectorAll('#t thead th[data-k]').forEach(th => th.dataset.k === key ? th.setAttribute('aria-sort', key === 'rv' ? 'descending' : 'ascending') : th.removeAttribute('aria-sort'));
+    document.getElementById('cap').textContent = `${rows.length}店舗・${m}分の総額で比較`;
+  };
+  document.querySelectorAll('#t thead th[data-k] button').forEach(b => b.addEventListener('click', () => { key = b.parentElement.dataset.k; render(); }));
+  document.querySelectorAll('input[name=m]').forEach(i => i.addEventListener('change', () => { m = +i.value; render(); }));
+  render();
+})();
+</script>
+</body>
+</html>

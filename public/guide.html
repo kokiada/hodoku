@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hodoku｜困ったときに相談できる先と手順</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/hodoku.css">
+<style>
+.article{max-width:680px;margin:0 auto}
+.hero-img{height:200px;border-radius:18px;margin-top:16px}
+.article h1{font:700 28px/1.55 var(--serif);letter-spacing:.06em;margin-top:24px;text-wrap:balance}
+.byline{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin-top:12px;font-size:12px;color:var(--fuji-ink);padding-bottom:20px;border-bottom:1px solid var(--suna)}
+.body{font-size:16px;line-height:2.05;max-width:36em}
+.body p{margin-top:1.4em}
+.body h2{font:700 20px/1.6 var(--serif);letter-spacing:.06em;margin-top:2.4em}
+.body ol{margin:1em 0 0 1.4em}
+.body li{margin-top:.4em}
+.toc{margin-top:28px;padding:18px 22px;border:1px solid var(--suna);border-radius:18px;background:var(--kinu);font-size:14px}
+.toc b{font:700 14px var(--serif);letter-spacing:.06em}
+.toc ol{list-style:none;counter-reset:t;margin-top:8px}
+.toc li{counter-increment:t;display:grid;grid-template-columns:24px 1fr;padding:6px 0;border-top:1px solid var(--line)}
+.toc li::before{content:counter(t);font:500 13px var(--serif);color:var(--suou)}
+.toc li.l{color:var(--fuji-ink)}
+.fade{position:relative;max-height:9.5em;overflow:hidden}
+.fade::after{content:"";position:absolute;inset:auto 0 0;height:6em;background:linear-gradient(transparent,var(--washi))}
+
+.pay{margin-top:8px;background:var(--sumi);color:var(--washi);border-radius:24px;padding:32px 24px;text-align:center}
+.pay h2{font:700 21px/1.6 var(--serif);letter-spacing:.06em;margin-top:10px}
+.pay .rest{font-size:12px;color:#BDB3C4;margin-top:4px}
+.pay .plan{display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;margin:22px 0 16px;padding:16px 18px;border:1px solid #4A3F50;border-radius:14px}
+.pay .plan b{font:700 15px var(--serif)}
+.pay .plan small{display:block;font-size:11px;color:#BDB3C4;line-height:1.7;margin-top:2px}
+.pay .plan .p{font:700 22px var(--serif);white-space:nowrap}
+.pay .plan .p small{display:inline;font:400 11px var(--sans)}
+.pay .btns{display:grid;gap:10px}
+.pay .fine{font-size:11px;color:#BDB3C4;margin-top:16px;line-height:1.8}
+.pay .fine a{color:var(--washi)}
+.related{margin-top:56px}
+.related h2{font:700 18px var(--serif)}
+.related a{display:grid;grid-template-columns:72px 1fr;gap:14px;padding:14px 0;border-bottom:1px solid var(--suna);text-decoration:none;align-items:center}
+.related .tex{aspect-ratio:1}
+.related h3{font:700 15px/1.6 var(--serif)}
+.related span{font-size:12px;color:var(--fuji-ink)}
+.unlocked .fade{max-height:none}.unlocked .fade::after{display:none}
+.unlocked .pay{display:none}
+.more{display:none}
+.unlocked .more{display:block}
+@media (min-width:1024px){
+  .hero-img{height:320px;border-radius:24px}
+  .article h1{font-size:38px}
+  .pay{padding:40px 48px}
+  .pay .btns{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html">Hodoku<small>ほどく</small></a>
+  <nav aria-label="メイン"><ul><li><a href="shops.html">店舗をさがす</a></li><li><a href="therapist.html">口コミ</a></li><li><a href="guide.html" aria-current="page">ガイド</a></li><li><a href="account.html">マイページ</a></li><li><a href="login.html">ログイン</a></li></ul></nav>
+  <button class="menu" aria-label="メニュー" type="button"><span></span></button>
+</header>
+
+<main class="wrap"><article class="article" id="art">
+  <ol class="crumb"><li><a href="index.html">トップ</a></li><li><a href="index.html#guides">ガイド</a></li><li>困ったときの相談先</li></ol>
+  <div class="hero-img tex night" role="img" aria-label="窓越しの夜景と、にじむ街の灯り"><span class="cap">写真：窓越しの夜景（イメージ）</span></div>
+  <h1>困ったときに、相談できる先と手順</h1>
+  <div class="byline"><span class="tag">会員向け</span><span>Hodoku編集部</span><span>2026年10月</span><span>8分で読めます</span></div>
+
+  <nav class="toc" aria-label="目次"><b>この記事の内容</b>
+    <ol><li>まず、その場でできること</li><li>店舗の窓口に伝えること</li><li class="l">店舗が応じないときの相談先</li><li class="l">記録の残し方と、伝える文例</li></ol>
+  </nav>
+
+  <div class="body fade">
+    <h2>まず、その場でできること</h2>
+    <p>約束と違うことが起きたり、不安を感じたりしたときは、その時点で中断してかまいません。中断の合図は予約時に決めておくと安心です。ほとんどの店舗は、中断しても追加料金がかからない規定を設けています。</p>
+    <h2>店舗の窓口に伝えること</h2>
+    <p>落ち着いてからで大丈夫です。日時、担当者、起きたことを、短い文で順に書き出します。電話よりも、記録が残るメールやフォームを選びましょう。</p>
+    <p>返信が来ないまま3日が過ぎたら、次の相談先に進みます。</p>
+  </div>
+
+  <div class="more body">
+    <h2>店舗が応じないときの相談先</h2>
+    <p>（会員向けの本文。モックでは省略しています。）</p>
+  </div>
+
+  <section class="pay on-dark" aria-labelledby="h-pay">
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="#E7B8BE" stroke-width="1.2" aria-hidden="true" style="margin:0 auto;display:block"><rect x="2.5" y="7" width="11" height="7.5" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>
+    <h2 id="h-pay">この続きは、会員の方へ</h2>
+    <p class="rest">残り約5,200字・相談先の一覧と連絡の文例つき</p>
+    <div class="plan"><span><b>プレミアム</b><small>すべてのガイドと、店舗・担当者の詳しいデータ。いつでも解約できます。</small></span><span class="p">¥1,480<small>／月</small></span></div>
+    <div class="btns">
+      <a class="btn primary" href="membership.html">会員になって続きを読む</a>
+      <button class="btn quiet" type="button" id="buy">この記事だけ購入 ¥300</button>
+    </div>
+    <p class="fine">金額は仮のサンプルです。明細には「Hodoku」と表示されます（決済代行会社に確認中）。<br><a href="membership.html#signup">すでに会員の方はログイン</a></p>
+  </section>
+
+  <section class="related" aria-labelledby="h-rel">
+    <h2 id="h-rel">あわせて読みたい</h2>
+    <a href="guide.html"><div class="tex"></div><div><h3>予約前に確認したい4つのこと</h3><span>無料・5分</span></div></a>
+    <a href="guide.html"><div class="tex b"></div><div><h3>NGの伝え方：そのまま使える文例</h3><span>無料・4分</span></div></a>
+  </section>
+  <div class="memo legal" style="margin-top:24px"><b>要確認（弁護士・決済代行）</b>単品購入の可否、明細表記、特商法の表示位置。</div>
+</article></main>
+
+<footer class="site"><div class="in">
+  <div><a class="logo" href="index.html">Hodoku<small>ほどく</small></a><p style="margin-top:14px">予約の前に、確かめて選ぶための比較サイト。<br>18歳未満の方はご利用いただけません。</p></div>
+  <div>
+    <ul><li><a href="legal.html#terms">利用規約</a></li><li><a href="legal.html#privacy">プライバシーポリシー</a></li><li><a href="legal.html#tokushoho">特定商取引法に基づく表記</a></li><li><a href="legal.html#guideline">投稿ガイドライン</a></li><li><a href="legal.html#removal">削除・訂正の依頼</a></li><li><a href="legal.html#contact">お問い合わせ</a></li></ul>
+    <p>© 2026 Hodoku（デザイン用サンプル）</p>
+  </div>
+</div></footer>
+<script src="assets/hodoku.js"></script>
+<script>
+document.getElementById('buy').addEventListener('click', e => {
+  const b = e.currentTarget; b.disabled = true; b.textContent = '処理しています…';
+  setTimeout(() => { document.getElementById('art').classList.add('unlocked'); hodokuToast('購入しました。続きを表示しています（モック）'); }, 900);
+});
+</script>
+</body>
+</html>

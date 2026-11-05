@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hodoku｜渋谷・恵比寿・代官山エリアの店舗</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/hodoku.css">
+<style>
+.filters{padding:20px 0 4px;border-top:1px solid var(--suna)}
+.filters fieldset{border:0;margin-bottom:18px}
+.filters legend{font-size:12px;font-weight:500;color:var(--fuji-ink);margin-bottom:8px;letter-spacing:.1em}
+.filters .chips{gap:6px}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--sumi)}
+.bar .count{font-size:13px}
+.bar .count b{font:700 18px var(--serif);margin-right:2px}
+.bar label{font-size:12px;color:var(--fuji-ink);display:flex;align-items:center;gap:8px}
+.bar .select{width:auto;padding:8px 36px 8px 14px;font-size:13px;border-radius:999px;background-position:right 14px center}
+
+.list{list-style:none}
+.row{display:grid;grid-template-columns:72px 1fr;gap:6px 16px;padding:22px 0;border-bottom:1px solid var(--suna)}
+.row .tex{grid-row:span 2;width:72px;height:72px}
+.row .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.row h2{font:700 18px/1.4 var(--serif);letter-spacing:.06em}
+.row h2 a{text-decoration:none}
+.row h2 a:hover{text-decoration:underline}
+.row .area{font-size:12px;color:var(--fuji-ink);width:100%}
+.row .money{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:2px}
+.row .total{font:700 22px var(--serif)}
+.row .total small{font:400 11px var(--sans);color:var(--fuji-ink);margin-left:6px}
+.row .facts{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;margin-top:8px}
+.row .foot{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;font-size:12px}
+.row .foot a{font-weight:500;color:var(--suou);white-space:nowrap}
+.row .meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;color:var(--fuji-ink)}
+.empty{display:none;padding:48px 0;text-align:center}
+.empty h2{font:700 18px var(--serif)}
+.empty p{font-size:13px;color:var(--fuji-ink);margin:8px 0 18px}
+.list:not(:has(.row:not([hidden])))+.empty{display:block}
+.note{font-size:11px;color:var(--fuji-ink);margin-top:14px}
+.more{margin-top:24px}
+.side .memo{margin-top:12px}
+
+@media (min-width:1024px){
+  .layout{display:grid;grid-template-columns:240px 1fr;gap:64px;align-items:start}
+  .filters{position:sticky;top:24px;padding-top:24px}
+  .row{grid-template-columns:96px 1.3fr 1.6fr auto;gap:4px 28px;align-items:center}
+  .row .tex{width:96px;height:96px;grid-row:auto}
+  .row .money{display:block;text-align:right;grid-column:4;grid-row:1}
+  .row .total{display:block}
+  .row .total small{display:block;margin:0}
+  .row .facts{grid-column:3;grid-row:1;margin:0}
+  .row .foot{grid-column:2/-1;margin:0}
+  .more{display:flex;justify-content:center}
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html">Hodoku<small>ほどく</small></a>
+  <nav aria-label="メイン"><ul><li><a href="shops.html" aria-current="page">店舗をさがす</a></li><li><a href="therapist.html">口コミ</a></li><li><a href="guide.html">ガイド</a></li><li><a href="account.html">マイページ</a></li><li><a href="login.html">ログイン</a></li></ul></nav>
+  <button class="menu" aria-label="メニュー" type="button"><span></span></button>
+</header>
+
+<main class="wrap">
+  <div class="page-head">
+    <ol class="crumb"><li><a href="index.html">トップ</a></li><li><a href="#">東京都</a></li><li>渋谷・恵比寿・代官山</li></ol>
+    <h1>渋谷・恵比寿・代官山エリアの店舗</h1>
+    <p>料金は、コース・指名料・交通費を合わせた90分の総額です。掲載情報は各店の公式情報をもとに運営が作成しています（最終確認日は店舗ごとに表示）。</p>
+  </div>
+
+  <div class="layout">
+    <aside class="side">
+      <form class="filters" id="filters" aria-label="条件で絞り込む">
+        <fieldset><legend>駅</legend>
+          <div class="chips">
+            <label class="chip sm"><input type="checkbox" name="st" value="渋谷" checked><span>渋谷</span></label>
+            <label class="chip sm"><input type="checkbox" name="st" value="恵比寿" checked><span>恵比寿</span></label>
+            <label class="chip sm"><input type="checkbox" name="st" value="代官山" checked><span>代官山</span></label>
+            <label class="chip sm"><input type="checkbox" name="st" value="中目黒"><span>中目黒</span></label>
+          </div>
+        </fieldset>
+        <fieldset><legend>安心のための条件</legend>
+          <div class="chips">
+            <label class="chip sm"><input type="checkbox" name="f" value="ng"><span>NG事前確認</span></label>
+            <label class="chip sm"><input type="checkbox" name="f" value="desk"><span>相談窓口あり</span></label>
+            <label class="chip sm"><input type="checkbox" name="f" value="cancel"><span>前日まで変更無料</span></label>
+            <label class="chip sm"><input type="checkbox" name="f" value="first"><span>はじめて歓迎</span></label>
+          </div>
+        </fieldset>
+        <fieldset><legend>予算（90分の総額）</legend>
+          <div class="chips">
+            <label class="chip sm"><input type="radio" name="b" value="99999" checked><span>指定なし</span></label>
+            <label class="chip sm"><input type="radio" name="b" value="17000"><span>〜17,000円</span></label>
+            <label class="chip sm"><input type="radio" name="b" value="20000"><span>〜20,000円</span></label>
+          </div>
+        </fieldset>
+      </form>
+      <div class="memo"><b>掲載の方針</b>掲載料・紹介料は受け取っていません。並び順は選んだ条件だけで決まり、広告枠はありません。</div>
+    </aside>
+
+    <section aria-label="店舗の一覧">
+      <div class="bar">
+        <p class="count" aria-live="polite"><b id="n">4</b>件</p>
+        <label>並び替え
+          <select class="select" id="sort">
+            <option value="total">総額が安い順</option>
+            <option value="reviews">口コミが多い順</option>
+            <option value="updated">情報の確認が新しい順</option>
+          </select>
+        </label>
+      </div>
+
+      <ul class="list" id="list"></ul>
+      <div class="empty" id="empty-state" style="display:none">
+        <h2>この条件に合う店舗はありません</h2>
+        <p>条件をひとつ外すか、駅を増やしてみてください。</p>
+        <button class="btn quiet sm" type="button" id="reset">条件をすべて外す</button>
+      </div>
+
+      <p class="note">店舗名・料金・口コミ件数はデザイン用の架空のサンプルです。「信頼度」は利用確認済みの口コミの割合と、類似投稿の検出結果から算出します（<a href="therapist.html#trust">算出方法</a>）。</p>
+      <div class="more"><a class="btn quiet" href="compare.html">内訳を表で比べる</a></div>
+    </section>
+  </div>
+</main>
+
+<footer class="site"><div class="in">
+  <div><a class="logo" href="index.html">Hodoku<small>ほどく</small></a><p style="margin-top:14px">予約の前に、確かめて選ぶための比較サイト。<br>18歳未満の方はご利用いただけません。</p></div>
+  <div>
+    <ul><li><a href="legal.html#terms">利用規約</a></li><li><a href="legal.html#privacy">プライバシーポリシー</a></li><li><a href="legal.html#tokushoho">特定商取引法に基づく表記</a></li><li><a href="legal.html#guideline">投稿ガイドライン</a></li><li><a href="legal.html#removal">削除・訂正の依頼</a></li><li><a href="legal.html#contact">お問い合わせ</a></li></ul>
+    <p>© 2026 Hodoku（デザイン用サンプル）</p>
+  </div>
+</div></footer>
+<script src="assets/hodoku.js"></script>
+<script>
+(() => {
+  const form = document.getElementById('filters'), list = document.getElementById('list');
+  const n = document.getElementById('n'), sort = document.getElementById('sort'), empty = document.getElementById('empty-state');
+
+  const row = s => h('li', {class: 'row'},
+    h('div', {class: texClass(s.slug), role: 'img', 'aria-label': s.area + 'の質感'}),
+    h('div', {class: 'head'},
+      h('h2', {}, h('a', {href: `shop.html?slug=${encodeURIComponent(s.slug)}`, text: s.name})),
+      s.isSample ? h('span', {class: 'tag sample', text: '架空のサンプル'}) : null,
+      h('span', {class: 'area', text: s.area})),
+    h('div', {class: 'money'}, h('span', {class: 'total price'}, yen(s.totalYen), h('small', {text: `${s.minutes}分の総額`}))),
+    h('div', {class: 'facts'},
+      h('span', {class: s.hasNgPrecheck ? 'dot' : 'dot no', text: s.hasNgPrecheck ? 'NG事前確認' : 'NG確認なし'}),
+      h('span', {class: s.hasSupportDesk ? 'dot' : 'dot no', text: s.hasSupportDesk ? '相談窓口' : '相談窓口なし'}),
+      (() => { const [cls, label] = changeLabel(s.freeChangeHours); return h('span', {class: 'dot ' + cls, text: label}); })()),
+    h('div', {class: 'foot'},
+      h('span', {class: 'meta'}, trustBadge(s.trust), `口コミ${s.reviewCount}件` + (s.lastCheckedAt ? `・${mmdd(s.lastCheckedAt)}確認` : '')),
+      h('a', {href: `shop.html?slug=${encodeURIComponent(s.slug)}`, text: '総額と規定を見る'})));
+
+  async function load() {
+    const fd = new FormData(form);
+    const params = new URLSearchParams();
+    const st = fd.getAll('st'); if (st.length) params.set('station', st.join(','));
+    const f = fd.getAll('f'); if (f.length) params.set('flags', f.join(','));
+    const b = fd.get('b'); if (b && b !== '99999') params.set('budget', b);
+    params.set('sort', sort.value);
+    list.setAttribute('aria-busy', 'true');
+    try {
+      const { shops } = await hodokuApi('/shops?' + params.toString());
+      list.replaceChildren(...shops.map(row));
+      n.textContent = shops.length;
+      empty.style.display = shops.length ? 'none' : '';
+    } catch (e) { showError(list, e); } finally { list.removeAttribute('aria-busy'); }
+  }
+  form.addEventListener('change', load); sort.addEventListener('change', load);
+  document.getElementById('reset').addEventListener('click', () => {
+    form.querySelectorAll('input[type=checkbox]').forEach(i => i.checked = false);
+    form.querySelector('input[name=b][value="99999"]').checked = true; load();
+  });
+  load();
+})();
+</script>
+</body>
+</html>

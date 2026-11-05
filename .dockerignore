@@ -1,0 +1,14 @@
+node_modules
+dist
+data
+.git
+.github
+*.log
+.env
+.env.*
+test
+docs
+.kiro
+hodoku-assets
+README.md
+HANDOFF.md

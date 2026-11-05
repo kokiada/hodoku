@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hodoku｜Kai さんの口コミ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/hodoku.css">
+<style>
+.profile{display:grid;grid-template-columns:96px 1fr;gap:18px;align-items:start;margin-top:16px}
+.profile .tex{width:96px;aspect-ratio:4/5}
+.profile .shop{font-size:12px;color:var(--fuji-ink)}
+.profile .shop a{color:var(--fuji-ink)}
+.profile h1{font:700 28px/1.4 var(--serif);letter-spacing:.06em;margin:2px 0 6px}
+.profile p{font-size:13px;line-height:1.8}
+.profile .tags{margin-top:10px}
+
+/* 傾向：評価バー（長さは data-score から計算） */
+.scores{margin-top:20px;border-top:1px solid var(--sumi);list-style:none}
+.scores li{display:grid;grid-template-columns:10.5em 1fr 2.5em;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px}
+.meter{position:relative;height:4px;border-radius:2px;background:var(--line)}
+.meter::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--w,0);border-radius:inherit;background:var(--suou)}
+.scores b{font:700 16px var(--serif);text-align:right;font-variant-numeric:tabular-nums}
+.basis{font-size:12px;color:var(--fuji-ink);margin-top:10px}
+
+.trust-how{margin-top:20px;padding:20px 22px;border:1px solid var(--suna);border-radius:18px;background:var(--kinu)}
+.trust-how h3{font:700 15px var(--serif);letter-spacing:.06em}
+.trust-how dl{display:grid;grid-template-columns:auto 1fr;gap:10px 14px;margin-top:12px;font-size:13px;align-items:center}
+.trust-how dd{color:var(--fuji-ink);font-size:12px;line-height:1.7}
+
+/* 口コミ：1件目は大きく */
+.reviews-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px;padding-bottom:12px;border-bottom:1px solid var(--sumi)}
+.reviews-bar .select{width:auto;padding:8px 36px 8px 14px;font-size:13px;border-radius:999px;background-position:right 14px center}
+.rv{padding:24px 0;border-bottom:1px solid var(--suna)}
+.rv header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.rv .who{font-size:12px;color:var(--fuji-ink);line-height:1.6}
+.rv .who b{display:block;font-size:14px;color:var(--sumi);font-weight:500}
+.rv .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.rv q{display:block;quotes:none;font:500 16px/1.95 var(--serif);margin-top:14px}
+.rv.lead q{font-size:19px}
+.rv .checks{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px}
+.rv .checks .warn{color:var(--suou-deep);font-weight:500}
+.rv.flag q{color:var(--fuji-ink)}
+.rv.flag .flagnote{margin-top:12px;padding:12px 14px;background:var(--suou-wash);border-radius:12px;font-size:12px;color:var(--suou-deep);line-height:1.75}
+.rv footer{display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:12px;color:var(--fuji-ink)}
+.helpful{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;border:1px solid var(--suna);border-radius:999px;background:var(--kinu);font:inherit;color:var(--sumi);cursor:pointer}
+.helpful[aria-pressed="true"]{border-color:var(--suou);color:var(--suou)}
+.rv footer a{color:var(--fuji-ink)}
+
+/* 無料／有料のラベル */
+.kind{display:inline-flex;align-items:center;font-size:11px;line-height:1;padding:6px 10px;border-radius:999px;white-space:nowrap}
+.kind.free{border:1px solid var(--suna);color:var(--fuji-ink);background:var(--kinu)}
+.kind.paid{border:1px solid var(--suou);color:var(--suou);background:var(--kinu)}
+.rv .head-tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+
+/* 有料・未購入：冒頭だけ見せて続きをぼかす */
+.rv.paid .body{position:relative}
+.rv.paid .tail{position:relative;margin-top:6px}
+.rv.paid .tail::before{content:"";display:block;height:3.2em;background:
+  repeating-linear-gradient(transparent 0 7px, rgba(43,34,48,.1) 7px 8px);
+  -webkit-mask:linear-gradient(var(--sumi),transparent);mask:linear-gradient(var(--sumi),transparent);border-radius:4px}
+.rv.bought .lock-ui,.rv:not(.paid) .lock-ui{display:none}
+.rv.paid.bought .tail::before{display:none}
+.lock-ui{margin-top:16px;padding:16px 18px;border:1px solid var(--suna);border-radius:14px;background:var(--kinu);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.lock-ui .px{display:flex;flex-direction:column;gap:2px}
+.lock-ui .px b{font:700 20px var(--serif);color:var(--suou);font-variant-numeric:tabular-nums}
+.lock-ui .px small{font-size:11px;color:var(--fuji-ink)}
+.bought-note{margin-top:12px;font-size:12px;color:var(--suou);display:inline-flex;align-items:center;gap:6px}
+.bought-note::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--suou)}
+
+/* 投稿者の実績（有料カードのフッターに） */
+.seller{display:inline-flex;gap:8px;align-items:center;color:var(--fuji-ink)}
+
+.write{margin-top:40px}
+.write-cta{margin-top:40px;padding:22px;border:1px solid var(--suna);border-radius:18px;background:var(--kinu);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
+.write-cta p{font-size:13px;color:var(--fuji-ink);max-width:30em}
+.write-cta b{color:var(--sumi);font-weight:500}
+
+/* 購入ダイアログ */
+dialog.buy{border:0;border-radius:20px;padding:0;max-width:440px;width:calc(100% - 32px);background:var(--washi);color:var(--sumi);box-shadow:0 30px 70px -24px rgba(43,34,48,.5)}
+dialog.buy::backdrop{background:rgba(43,34,48,.45)}
+.buy .bd{padding:24px}
+.buy h2{font:700 20px var(--serif);letter-spacing:.06em}
+.buy .prev{margin-top:14px;padding:16px;border-radius:12px;background:var(--kinu);border:1px solid var(--line);font-size:13px;line-height:1.9}
+.buy .prev .who{font-size:12px;color:var(--fuji-ink);display:block;margin-bottom:6px}
+.buy .bill{margin-top:18px;border-top:1px solid var(--sumi)}
+.buy .bill .r{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);font-size:13px}
+.buy .bill .r.sum{border-bottom:1px solid var(--sumi)}
+.buy .bill .r.sum span:first-child{font:700 14px var(--serif)}
+.buy .bill .r.sum .v{font:700 20px var(--serif);color:var(--suou)}
+.buy .bill .v{font-variant-numeric:tabular-nums}
+.buy .split{font-size:11px;color:var(--fuji-ink);margin-top:8px;line-height:1.7}
+.buy .pay{margin-top:16px}
+.buy .pay .select{width:100%}
+.buy .fine{font-size:11px;color:var(--fuji-ink);line-height:1.8;margin-top:14px}
+.buy .fine a{color:var(--sumi)}
+.buy .act{display:grid;gap:10px;margin-top:18px}
+.buy .close{position:absolute;top:12px;right:12px;width:36px;height:36px;border:0;border-radius:50%;background:var(--kinu);cursor:pointer;font-size:18px;line-height:1;color:var(--sumi)}
+
+@media (min-width:1024px){
+  .layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:80px;align-items:start}
+  .layout>aside{position:sticky;top:24px}
+  .profile{grid-template-columns:120px 1fr}
+  .profile .tex{width:120px}
+  .rv.lead q{font-size:22px}
+  .write{display:flex;justify-content:center}
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html">Hodoku<small>ほどく</small></a>
+  <nav aria-label="メイン"><ul><li><a href="shops.html">店舗をさがす</a></li><li><a href="therapist.html" aria-current="page">口コミ</a></li><li><a href="guide.html">ガイド</a></li><li><a href="account.html">マイページ</a></li><li><a href="login.html">ログイン</a></li></ul></nav>
+  <button class="menu" aria-label="メニュー" type="button"><span></span></button>
+</header>
+
+<main class="wrap">
+  <ol class="crumb"><li><a href="index.html">トップ</a></li><li id="crumb-shop">…</li><li id="crumb-name">…</li></ol>
+
+  <div class="layout">
+    <aside>
+      <div class="profile">
+        <div class="tex b" id="p-tex" role="img" aria-label="担当者写真の代わりの質感"></div>
+        <div>
+          <span class="shop" id="p-shop"></span>
+          <h1 id="p-name">…</h1>
+          <p id="p-bio"></p>
+          <div class="tags" id="p-tags"></div>
+        </div>
+      </div>
+
+      <section class="sec" aria-labelledby="h-tend">
+        <h2 id="h-tend" class="h2">口コミの傾向</h2>
+        <ul class="scores" id="scores"></ul>
+        <p class="basis" id="scores-basis"></p>
+      </section>
+
+      <section class="trust-how" id="trust" aria-labelledby="h-trust">
+        <h3 id="h-trust">口コミの印の見方</h3>
+        <dl>
+          <dt><span class="trust">利用確認済み</span></dt><dd>予約確認メールなどで、利用を運営が確認できた投稿</dd>
+          <dt><span class="trust mid">確認中</span></dt><dd>審査は通過、利用の確認はまだの投稿</dd>
+          <dt><span class="trust low">要確認</span></dt><dd>ほかの投稿と文面が似ている、または特典付きの投稿</dd>
+          <dt><span class="kind paid">有料 ¥300</span></dt><dd>投稿者が有料で公開した口コミ。1件ずつ購入して全文を読めます</dd>
+        </dl>
+        <p class="basis" style="margin-top:12px">有料の口コミは、利用確認済みで店舗特典のないものだけが出品できます。販売は運営が行い、代金の90%が投稿者に、10%が運営の手数料になります。</p>
+      </section>
+    </aside>
+
+    <section class="sec" aria-labelledby="h-rv" style="padding-top:48px">
+      <h2 id="h-rv" class="h2">口コミ <span id="rv-count">0</span>件</h2>
+      <p>公開前に、運営が投稿ガイドラインに沿って審査しています。有料の口コミは、購入すると全文を恒久的に読めます。</p>
+      <div class="reviews-bar">
+        <span class="small muted" id="rv-summary"></span>
+        <label><span class="vh">並び替え</span><select class="select" id="rv-sort"><option value="new">新しい順</option><option value="helpful">参考になった順</option><option value="free">無料のみ</option></select></label>
+      </div>
+      <div id="rv-list" aria-live="polite"></div>
+      <div class="write-cta">
+        <p><b>この担当者を利用しましたか？</b><br>口コミを書いて、無料で公開するか、有料で販売できます。販売価格の90%があなたの受け取りになります。</p>
+        <a class="btn primary" id="write" href="review.html">口コミを書く</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<dialog class="buy" id="buyDlg" aria-labelledby="buy-h">
+  <button class="close" type="button" aria-label="閉じる" id="buyClose">&times;</button>
+  <div class="bd">
+    <h2 id="buy-h">ポイントで全文を読む</h2>
+    <div class="prev"><span class="who" id="buy-who"></span><span id="buy-prev"></span>……（続きは解放後に表示されます）</div>
+    <div class="bill">
+      <div class="r"><span>この口コミ 1件</span><span class="v" id="buy-p1">300 pt</span></div>
+      <div class="r"><span>保有ポイント</span><span class="v" id="buy-bal">— pt</span></div>
+      <div class="r sum"><span>解放後の残高</span><span class="v" id="buy-after">— pt</span></div>
+    </div>
+    <p class="split">1ポイント＝1円相当。ポイントはビットキャッシュでチャージできます。</p>
+    <p class="fine" id="buy-note">解放すると全文を恒久的に読めます。明細・通知には「Hodoku」とだけ表示されます。</p>
+    <div class="act">
+      <button class="btn primary" type="button" id="buyGo">ポイントで解放する</button>
+      <button class="btn quiet" type="button" id="buyCancel">やめておく</button>
+    </div>
+  </div>
+</dialog>
+
+<footer class="site"><div class="in">
+  <div><a class="logo" href="index.html">Hodoku<small>ほどく</small></a><p style="margin-top:14px">予約の前に、確かめて選ぶための比較サイト。<br>18歳未満の方はご利用いただけません。</p></div>
+  <div>
+    <ul><li><a href="legal.html#terms">利用規約</a></li><li><a href="legal.html#privacy">プライバシーポリシー</a></li><li><a href="legal.html#tokushoho">特定商取引法に基づく表記</a></li><li><a href="legal.html#guideline">投稿ガイドライン</a></li><li><a href="legal.html#removal">削除・訂正の依頼</a></li><li><a href="legal.html#contact">お問い合わせ</a></li></ul>
+    <p>© 2026 Hodoku（デザイン用サンプル）</p>
+  </div>
+</div></footer>
+<script src="assets/hodoku.js"></script>
+<script>
+(() => {
+  const slug = new URLSearchParams(location.search).get('slug');
+  const $ = id => document.getElementById(id);
+  const WHEN = {this_month: '今月', last_month: '先月', few_months_ago: '2〜3か月前'};
+  const NG = {on_booking: 'NGを予約時に確認', on_site: 'NGは当日に確認', none: 'NG確認なし'};
+  const TOTAL = {matched: '総額は案内どおり', slightly_off: '総額は少し違った', very_off: '総額は大きく違った'};
+  const TEX = {a: '', b: 'b', c: 'c'};
+  let data = null, me = null, current = null, salesEnabled = false;
+  if (slug) $('write').href = `review.html?slug=${encodeURIComponent(slug)}`;
+
+  const trustFor = r => r.trust === 'verified' ? ['trust', '利用確認済み'] : r.trust === 'flagged' ? ['trust low', '要確認'] : ['trust mid', '確認中'];
+
+  function reviewCard(r, i) {
+    const [tcls, tlabel] = trustFor(r);
+    const paid = r.kind === 'paid';
+    const bought = paid && !r.locked;
+    const art = h('article', {class: ['rv', i === 0 ? 'lead' : '', paid ? 'paid' : '', bought ? 'bought' : '', r.trust === 'flagged' ? 'flag' : ''].join(' ').trim(), 'data-id': r.id},
+      h('header', {},
+        h('span', {class: 'who'}, h('b', {text: r.authorNickname}), `投稿${r.authorPostCount}件・${WHEN[r.visitedWhen] ?? ''}に利用`),
+        h('span', {class: tcls, text: tlabel})),
+      h('div', {class: 'head-tags'},
+        h('span', {class: 'kind ' + (paid ? 'paid' : 'free'), text: paid ? `有料 ${yen(r.priceYen)}` : '無料'}),
+        h('span', {class: 'tag', text: `${r.courseMinutes}分`})));
+
+    if (paid && r.locked) {
+      art.append(h('div', {class: 'body'}, h('q', {text: r.body}), h('div', {class: 'tail', 'aria-hidden': 'true'})));
+    } else {
+      art.append(h('q', {text: r.body}));
+      if (bought && !r.isMine) art.append(h('p', {class: 'bought-note', text: '購入済み・マイページからいつでも読めます'}));
+    }
+    art.append(h('div', {class: 'checks'},
+      h('span', {class: r.ngPrecheck === 'none' ? 'dot no' : 'dot', text: NG[r.ngPrecheck]}),
+      h('span', {class: r.totalMatched === 'matched' ? 'dot' : 'dot no', text: TOTAL[r.totalMatched]}),
+      h('span', {class: r.giftReceived ? 'warn' : 'dot no', text: r.giftReceived ? '店舗からの特典：あり' : '店舗からの特典：なし'})));
+    if (r.trust === 'flagged') art.append(h('p', {class: 'flagnote', text: 'ほかの投稿と文面が似ています。運営で確認中のため、傾向の集計には含めていません。'}));
+
+    if (paid && r.locked) {
+      if (salesEnabled) {
+        art.append(h('div', {class: 'lock-ui'},
+          h('span', {class: 'px'}, h('b', {text: `${r.priceYen} ポイント`}), h('small', {text: 'ポイントで解放すると全文を恒久的に読めます'})),
+          h('button', {class: 'btn primary sm', type: 'button', onclick: () => openBuy(r), text: `${r.priceYen}ptで読む`})));
+      } else {
+        // 有料販売は後日公開。購入導線は出さず、予定だけ案内する
+        art.append(h('div', {class: 'lock-ui'},
+          h('span', {class: 'px'}, h('b', {text: '有料口コミ'}), h('small', {text: '有料での口コミ販売は後日公開予定です'})),
+          h('button', {class: 'btn quiet sm', type: 'button', disabled: true, text: '後日公開予定'})));
+      }
+    }
+
+    const helpful = h('button', {class: 'helpful', type: 'button', 'aria-pressed': 'false', disabled: r.isMine || !me,
+      title: !me ? 'ログインすると押せます' : '', onclick: async e => {
+        const btn = e.currentTarget;
+        try { const res = await hodokuApi(`/reviews/${r.id}/helpful`, {body: {}}); btn.setAttribute('aria-pressed', String(res.helpful)); btn.querySelector('.num').textContent = res.count; }
+        catch (err) { hodokuToast(err.message); }
+      }}, '参考になった ', h('span', {class: 'num', text: r.helpfulCount}));
+    const report = h('a', {href: '#', onclick: async e => {
+      e.preventDefault();
+      if (!me) { location.href = 'login.html?next=' + encodeURIComponent(location.pathname + location.search); return; }
+      const reason = prompt('通報の理由を入力してください（500字まで）');
+      if (!reason) return;
+      try { await hodokuApi(`/reviews/${r.id}/report`, {body: {reason}}); hodokuToast('通報を受け付けました。運営が確認します'); }
+      catch (err) { hodokuToast(err.message); }
+    }, text: '通報する'});
+    art.append(h('footer', {}, helpful, report));
+    return art;
+  }
+
+  function renderList() {
+    const mode = $('rv-sort').value;
+    let list = [...data.reviews];
+    if (mode === 'free') list = list.filter(r => r.kind === 'free');
+    if (mode === 'helpful') list.sort((a, b) => b.helpfulCount - a.helpfulCount);
+    $('rv-list').replaceChildren(...(list.length ? list.map(reviewCard) : [h('p', {class: 'muted', text: 'まだ口コミがありません。最初の投稿者になりませんか。'})]));
+  }
+
+  function render() {
+    const t = data.therapist, sm = data.summary;
+    document.title = `Hodoku｜${t.name} さんの口コミ`;
+    $('crumb-shop').replaceChildren(h('a', {href: `shop.html?slug=${encodeURIComponent(t.shopSlug)}`, text: t.shopName}));
+    $('crumb-name').textContent = t.name;
+    $('p-name').textContent = t.name;
+    $('p-bio').textContent = t.bio;
+    $('p-tex').className = 'tex ' + (TEX[t.texture] ?? '');
+    $('p-shop').replaceChildren(h('a', {href: `shop.html?slug=${encodeURIComponent(t.shopSlug)}`, text: t.shopName}));
+    $('p-tags').replaceChildren(trustBadge(sm.trust));
+    $('write').href = `review.html?slug=${encodeURIComponent(t.slug)}`;
+
+    const rows = [['事前確認のていねいさ', sm.scores.care], ['会話の心地よさ', sm.scores.comfort], ['時間・約束の正確さ', sm.scores.punctual], ['総額の分かりやすさ', sm.scores.totalClarity]];
+    $('scores').replaceChildren(...rows.map(([label, v]) => h('li', {}, label, h('span', {class: 'meter', 'data-score': v ?? 0}), h('b', {text: v == null ? '—' : v.toFixed(1)}))));
+    document.querySelectorAll('[data-score]').forEach(el => el.style.setProperty('--w', Math.max(0, Math.min(1, parseFloat(el.dataset.score) / 5)) * 100 + '%'));
+    $('scores').classList.add('in');
+    $('scores-basis').textContent = sm.scoredCount ? `5点満点。公開済みの口コミ${sm.scoredCount}件から集計。「要確認」の口コミは集計に含めていません。` : 'まだ集計できる口コミがありません。';
+    $('rv-count').textContent = sm.count;
+    $('rv-summary').textContent = `利用確認済み ${sm.verifiedCount}件・有料 ${sm.paidCount}件`;
+    renderList();
+  }
+
+  // ---------- ポイント解放ダイアログ ----------
+  const dlg = $('buyDlg');
+  let myPoints = 0, pointsLoaded = false;
+  async function loadPoints() {
+    if (!me) return 0;
+    try { myPoints = (await hodokuApi('/me/points')).balancePt; pointsLoaded = true; } catch { myPoints = 0; }
+    return myPoints;
+  }
+  function openBuy(r) {
+    if (!me) { location.href = 'login.html?next=' + encodeURIComponent(location.pathname + location.search); return; }
+    current = r;
+    const render = () => {
+      const bal = myPoints, after = bal - r.priceYen, enough = after >= 0;
+      $('buy-who').textContent = `${r.authorNickname}・投稿${r.authorPostCount}件`;
+      $('buy-prev').textContent = r.body;
+      $('buy-p1').textContent = `${r.priceYen} pt`;
+      $('buy-bal').textContent = `${bal.toLocaleString('ja-JP')} pt`;
+      $('buy-after').textContent = enough ? `${after.toLocaleString('ja-JP')} pt` : '不足しています';
+      const go = $('buyGo');
+      if (enough) { go.textContent = 'ポイントで解放する'; go.dataset.mode = 'unlock'; }
+      else { go.textContent = 'ポイントをチャージする'; go.dataset.mode = 'charge'; }
+      go.disabled = false;
+    };
+    render();
+    dlg.showModal();
+    if (!pointsLoaded) loadPoints().then(render);
+  }
+  $('buyClose').addEventListener('click', () => dlg.close());
+  $('buyCancel').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+  $('buyGo').addEventListener('click', async () => {
+    const go = $('buyGo');
+    if (go.dataset.mode === 'charge') { location.href = 'charge.html?next=' + encodeURIComponent(location.pathname + location.search); return; }
+    go.disabled = true; go.textContent = '処理しています…';
+    try {
+      const res = await hodokuApi(`/reviews/${current.id}/unlock`, {body: {}});
+      myPoints = res.balancePt;
+      dlg.close();
+      data = await hodokuApi(`/therapists/${encodeURIComponent(slug)}`);
+      renderList();
+      const card = document.querySelector(`[data-id="${current.id}"]`);
+      if (card) { card.classList.add('just-bought'); card.scrollIntoView({block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); }
+      hodokuToast('解放しました。全文を表示しています');
+    } catch (e) {
+      go.disabled = false; go.textContent = 'ポイントで解放する';
+      if (e.status === 402) { hodokuToast('ポイントが足りません。チャージしてください'); location.href = 'charge.html?next=' + encodeURIComponent(location.pathname + location.search); return; }
+      hodokuToast(e.status === 503 ? '現在、ポイントの利用は準備中です' : e.message);
+    }
+  });
+
+  $('rv-sort').addEventListener('change', renderList);
+
+  (async () => {
+    if (!slug) { location.replace('shops.html'); return; }
+    me = await window.hodokuMe;
+    salesEnabled = (await window.hodokuFlags).salesEnabled;
+    try { data = await hodokuApi(`/therapists/${encodeURIComponent(slug)}`); render(); }
+    catch (e) {
+      if (e.status === 404) { document.querySelector('main').replaceChildren(h('p', {class: 'msg show bad', text: '担当者が見つかりませんでした。'}), h('a', {class: 'btn quiet', href: 'shops.html', text: '店舗一覧へ'})); return; }
+      showError($('rv-list'), e);
+    }
+  })();
+})();
+</script>
+</body>
+</html>

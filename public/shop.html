@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hodoku｜Atelier Lumen の総額と規定</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/hodoku.css">
+<style>
+.cover{height:180px;border-radius:18px}
+.title{margin-top:24px}
+.title .tags{margin-bottom:12px}
+.title h1{font:700 30px/1.45 var(--serif);letter-spacing:.06em}
+.title .area{font-size:13px;color:var(--fuji-ink);margin-top:6px}
+.title .checked{font-size:12px;color:var(--fuji-ink);margin-top:2px}
+
+.tabs{position:sticky;top:0;z-index:5;background:var(--washi);margin:28px -24px 0;padding:0 24px;border-bottom:1px solid var(--suna);display:flex;gap:24px;overflow-x:auto;scrollbar-width:none}
+.tabs a{flex:none;display:block;padding:14px 0 12px;font-size:14px;text-decoration:none;border-bottom:2px solid transparent;color:var(--fuji-ink)}
+.tabs a[aria-current="true"]{color:var(--sumi);border-color:var(--suou);font-weight:500}
+
+/* 総額の内訳：計算書のような罫線表 */
+.bill{margin-top:20px;border-top:1px solid var(--sumi)}
+.bill .r{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:13px 0;border-bottom:1px solid var(--line);font-size:14px}
+.bill .r small{display:block;font-size:11px;color:var(--fuji-ink)}
+.bill .r .v{font-variant-numeric:tabular-nums;white-space:nowrap}
+.bill .sum{border-bottom:1px solid var(--sumi);padding:16px 0}
+.bill .sum span:first-child{font:700 15px var(--serif)}
+.bill .sum .v{font:700 26px var(--serif);color:var(--suou)}
+.bill .ext{color:var(--fuji-ink)}
+.bill .ext .v{color:var(--sumi)}
+.course{display:flex;gap:8px;margin-top:18px}
+.calc-note{font-size:12px;color:var(--fuji-ink);margin-top:12px}
+
+/* 安全への対応 */
+.safety{list-style:none;margin-top:20px;border-top:1px solid var(--sumi)}
+.safety li{display:grid;grid-template-columns:20px 1fr;gap:4px 12px;padding:16px 0;border-bottom:1px solid var(--line)}
+.safety li::before{content:"";width:7px;height:7px;margin-top:9px;border-radius:50%;background:var(--suou)}
+.safety li.no::before{background:none;border:1px solid var(--fuji)}
+.safety b{font-weight:500}
+.safety p{grid-column:2;font-size:13px;color:var(--fuji-ink);line-height:1.8}
+.safety .src{grid-column:2;font-size:11px;color:var(--fuji-ink)}
+
+/* キャンセル規定：時間軸 */
+.timeline{margin-top:20px;list-style:none;position:relative}
+.timeline li{display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;padding:14px 0 14px 22px;border-bottom:1px solid var(--line);position:relative;font-size:14px}
+.timeline li::before{content:"";position:absolute;left:3px;top:0;bottom:0;width:1px;background:var(--suna)}
+.timeline li::after{content:"";position:absolute;left:0;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:var(--washi);border:1px solid var(--fuji)}
+.timeline li.free::after{background:var(--suou);border-color:var(--suou)}
+.timeline .fee{font-variant-numeric:tabular-nums;font-weight:500;white-space:nowrap}
+.timeline li.free .fee{color:var(--suou)}
+.change{margin-top:14px;font-size:13px}
+
+/* 担当者 */
+.staff{display:grid;grid-auto-flow:column;grid-auto-columns:44%;gap:16px;margin:20px -24px 0;padding:0 24px 4px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.staff>*{scroll-snap-align:start}
+.person{text-decoration:none;display:block}
+.person .tex{aspect-ratio:4/5}
+.person h3{font:700 16px/1.4 var(--serif);margin-top:10px;letter-spacing:.06em}
+.person p{font-size:12px;color:var(--fuji-ink);line-height:1.7;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.person .meta{font-size:11px;color:var(--fuji-ink);margin-top:6px;display:flex;gap:8px;align-items:center}
+.person:hover h3{text-decoration:underline}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+.sec-head a{font-size:13px;color:var(--suou)}
+
+.actions{display:grid;gap:12px;margin-top:40px}
+.report{font-size:12px;color:var(--fuji-ink);margin-top:18px}
+.report a{color:var(--fuji-ink)}
+
+/* 予約前のメモ（右カラム） */
+.aside-card{background:var(--kinu);border:1px solid var(--suna);border-radius:18px;padding:22px}
+.aside-card h2{font:700 16px var(--serif);letter-spacing:.06em}
+.aside-card .big{font:700 30px var(--serif);color:var(--suou);margin-top:8px;font-variant-numeric:tabular-nums}
+.aside-card .big small{font:400 12px var(--sans);color:var(--fuji-ink);margin-left:8px}
+.aside-card ul{list-style:none;margin:14px 0 18px;font-size:13px;display:grid;gap:6px}
+.aside-card .btn{width:100%}
+.aside-card .btn+.btn{margin-top:10px}
+.aside{display:none}
+.memo{margin-top:16px}
+
+@media (min-width:1024px){
+  .cover{height:280px;border-radius:24px}
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:72px;align-items:start}
+  .title h1{font-size:44px}
+  .tabs{margin:40px 0 0;padding:0}
+  .aside{display:block;position:sticky;top:72px;margin-top:40px}
+  .actions{display:none}
+  .staff{grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin:20px 0 0;padding:0;overflow:visible}
+  .bill .r{font-size:15px}
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html">Hodoku<small>ほどく</small></a>
+  <nav aria-label="メイン"><ul><li><a href="shops.html" aria-current="page">店舗をさがす</a></li><li><a href="therapist.html">口コミ</a></li><li><a href="guide.html">ガイド</a></li><li><a href="account.html">マイページ</a></li><li><a href="login.html">ログイン</a></li></ul></nav>
+  <button class="menu" aria-label="メニュー" type="button"><span></span></button>
+</header>
+
+<main class="wrap">
+  <ol class="crumb" style="margin-bottom:16px"><li><a href="index.html">トップ</a></li><li><a href="shops.html">渋谷・恵比寿・代官山</a></li><li id="crumb-name">…</li></ol>
+  <div class="cover tex silk" id="cover" role="img" aria-label="店舗の質感イメージ"></div>
+
+  <div class="layout">
+    <div>
+      <div class="title">
+        <div class="tags" id="tags"></div>
+        <h1 id="shop-name">…</h1>
+        <p class="area" id="shop-area"></p>
+        <p class="checked" id="checked"></p>
+      </div>
+
+      <nav class="tabs" aria-label="このページの目次">
+        <a href="#total" aria-current="true">総額</a><a href="#safety">安全への対応</a><a href="#policy">キャンセル規定</a><a href="#staff">在籍の担当者</a>
+      </nav>
+
+      <section class="sec" id="total" aria-labelledby="h-total">
+        <h2 id="h-total">総額の目安</h2>
+        <p>予約前に支払う金額を、項目ごとに分けて載せています。</p>
+        <div class="course" role="radiogroup" aria-label="コースの長さ">
+          <label class="chip sm"><input type="radio" name="c" value="60"><span>60分</span></label>
+          <label class="chip sm"><input type="radio" name="c" value="90" checked><span>90分</span></label>
+          <label class="chip sm"><input type="radio" name="c" value="120"><span>120分</span></label>
+        </div>
+        <div class="bill" aria-live="polite">
+          <div class="r"><span>コース料金</span><span class="v" id="b-course">—</span></div>
+          <div class="r"><span>指名料<small>指名なしの場合は0円</small></span><span class="v" id="b-nomination">—</span></div>
+          <div class="r"><span>交通費</span><span class="v" id="b-transport">—</span></div>
+          <div class="r sum"><span>総額（<span id="b-min">90</span>分）</span><span class="v" id="b-total">—</span></div>
+          <div class="r ext"><span>延長30分</span><span class="v" id="b-ext">—</span></div>
+        </div>
+        <p class="calc-note">支払い方法：現金・クレジットカード（店舗による手数料なし）。金額はすべて架空のサンプルです。</p>
+      </section>
+
+      <section class="sec" id="safety" aria-labelledby="h-safety">
+        <h2 id="h-safety">安全への対応</h2>
+        <p>店舗に確認できた内容だけを載せています。</p>
+<ul class="safety" id="safety-list"></ul>
+      </section>
+
+      <section class="sec" id="policy" aria-labelledby="h-policy">
+        <h2 id="h-policy">キャンセル・変更の規定</h2>
+        <p>予約時刻からさかのぼって、いつまでなら無料かを示しています。</p>
+<ol class="timeline" id="timeline"></ol>
+      </section>
+
+      <section class="sec" id="staff" aria-labelledby="h-staff">
+        <div class="sec-head"><h2 id="h-staff">在籍の担当者</h2></div>
+        <p>名前はすべて仮名のサンプルです。写真は質感の仮画像です。</p>
+        <div class="staff" id="staff-list"></div>
+        <div class="memo"><b>未決</b>担当者写真の掲載可否と許可の取り方。決まるまでは質感の画像で代替します。</div>
+      </section>
+
+      <div class="actions" id="actions"></div>
+      <p class="report">掲載内容が実際と違う場合は <a href="legal.html#removal">訂正を依頼する</a></p>
+    </div>
+
+    <aside class="aside" aria-label="予約前のメモ">
+      <div class="aside-card">
+        <h2>予約前のメモ</h2>
+        <p class="big"><span id="a-total">—</span><small id="a-min">90分の総額</small></p>
+        <ul id="aside-facts"></ul>
+        <div id="aside-actions"></div>
+      </div>
+      <div class="memo">予約は店舗の公式サイトで行います。Hodokuは予約・決済を代行せず、店舗から報酬も受け取りません。</div>
+    </aside>
+  </div>
+</main>
+
+<footer class="site"><div class="in">
+  <div><a class="logo" href="index.html">Hodoku<small>ほどく</small></a><p style="margin-top:14px">予約の前に、確かめて選ぶための比較サイト。<br>18歳未満の方はご利用いただけません。</p></div>
+  <div>
+    <ul><li><a href="legal.html#terms">利用規約</a></li><li><a href="legal.html#privacy">プライバシーポリシー</a></li><li><a href="legal.html#tokushoho">特定商取引法に基づく表記</a></li><li><a href="legal.html#guideline">投稿ガイドライン</a></li><li><a href="legal.html#removal">削除・訂正の依頼</a></li><li><a href="legal.html#contact">お問い合わせ</a></li></ul>
+    <p>© 2026 Hodoku（デザイン用サンプル）</p>
+  </div>
+</div></footer>
+<script src="assets/hodoku.js"></script>
+<script>
+(() => {
+  const slug = new URLSearchParams(location.search).get('slug');
+  const $ = id => document.getElementById(id);
+  let shop = null, minutes = 90;
+
+  function renderBill(m) {
+    const course = shop.breakdown.course; // 90分基準で返るため、60/120分は再取得
+    $('b-course').textContent = yen(course);
+    $('b-nomination').textContent = yen(shop.breakdown.nomination);
+    $('b-transport').textContent = yen(shop.breakdown.transport);
+    $('b-ext').textContent = '+' + yen(shop.breakdown.extension30);
+    $('b-total').textContent = yen(shop.totalYen);
+    $('b-min').textContent = m;
+    $('a-total').textContent = yen(shop.totalYen);
+    $('a-min').textContent = m + '分の総額';
+  }
+
+  function render() {
+    document.title = `Hodoku｜${shop.name} の総額と規定`;
+    $('crumb-name').textContent = shop.name;
+    $('shop-name').textContent = shop.name;
+    $('shop-area').textContent = shop.area;
+    $('cover').className = 'cover ' + texClass(shop.slug);
+    $('checked').textContent = shop.lastCheckedAt ? `最終確認日 ${ymd(shop.lastCheckedAt)}・店舗の公式情報をもとに運営が作成` : '';
+    $('tags').replaceChildren(
+      shop.isSample ? h('span', {class: 'tag sample', text: '架空のサンプル'}) : null,
+      trustBadge(shop.trust),
+      shop.firstTimeFriendly ? h('span', {class: 'tag', text: 'はじめて歓迎'}) : null);
+    renderBill(minutes);
+
+    $('safety-list').replaceChildren(...(shop.safetyNotes || []).map(n =>
+      h('li', {class: n.ok ? '' : 'no'}, h('b', {text: n.title}), h('p', {text: n.body}), h('span', {class: 'src', text: n.source}))));
+    $('timeline').replaceChildren(...(shop.cancelPolicy || []).map(c =>
+      h('li', {class: c.feePercent === 0 ? 'free' : ''}, h('span', {text: c.label}), h('span', {class: 'fee', text: c.feePercent === 0 ? '無料' : `コース料金の${c.feePercent}%`}))));
+    $('staff-list').replaceChildren(...shop.therapists.map(t =>
+      h('a', {class: 'person', href: `therapist.html?slug=${encodeURIComponent(t.slug)}`},
+        h('div', {class: 'tex ' + ({a: '', b: 'b', c: 'c'}[t.texture] ?? ''), role: 'img', 'aria-label': t.name + 'の質感'}),
+        h('h3', {text: t.name}), h('p', {text: t.bio}),
+        h('span', {class: 'meta'}, trustBadge(t.trust), `口コミ${t.reviewCount}件`))));
+
+    const [chgCls, chgLabel] = changeLabel(shop.freeChangeHours);
+    $('aside-facts').replaceChildren(
+      h('li', {class: shop.hasNgPrecheck ? 'dot' : 'dot no', text: shop.hasNgPrecheck ? 'NGを予約時に確認' : 'NG事前確認なし'}),
+      h('li', {class: 'dot ' + chgCls, text: chgLabel}),
+      h('li', {class: shop.hasSupportDesk ? 'dot' : 'dot no', text: shop.hasSupportDesk ? 'トラブル時の窓口あり' : '相談窓口なし'}));
+
+    const first = shop.therapists[0];
+    const read = first ? h('a', {class: 'btn primary', href: `therapist.html?slug=${encodeURIComponent(first.slug)}`, text: `口コミを読む（${shop.reviewCount}件）`}) : null;
+    const site = () => h('a', {class: 'btn quiet', href: '#', 'data-toast': '店舗の公式サイトは準備中です', onclick: e => { e.preventDefault(); hodokuToast('店舗の公式サイトは準備中です'); }, text: '店舗の公式サイトへ'});
+    $('actions').replaceChildren(read, site());
+    $('aside-actions').replaceChildren(first ? h('a', {class: 'btn primary', href: read.href, text: read.textContent}) : null, site());
+  }
+
+  async function load() {
+    if (!slug) { location.replace('shops.html'); return; }
+    try {
+      ({ shop } = await hodokuApi(`/shops/${encodeURIComponent(slug)}?minutes=${minutes}`));
+      render();
+    } catch (e) {
+      if (e.status === 404) { document.querySelector('main').replaceChildren(h('p', {class: 'msg show bad', text: '店舗が見つかりませんでした。'}), h('a', {class: 'btn quiet', href: 'shops.html', text: '店舗一覧へ'})); return; }
+      showError(document.querySelector('.layout'), e);
+    }
+  }
+
+  document.querySelectorAll('input[name=c]').forEach(i => i.addEventListener('change', async () => {
+    minutes = +i.value;
+    try { ({ shop } = await hodokuApi(`/shops/${encodeURIComponent(slug)}?minutes=${minutes}`)); renderBill(minutes); }
+    catch (e) { hodokuToast(e.message); }
+  }));
+
+  /* 目次タブの現在位置 */
+  const tabs = [...document.querySelectorAll('.tabs a')];
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) tabs.forEach(t => t.setAttribute('aria-current', String(t.getAttribute('href') === '#' + e.target.id)));
+  }), {rootMargin: '-30% 0px -60% 0px'});
+  tabs.forEach(t => io.observe(document.querySelector(t.getAttribute('href'))));
+  load();
+})();
+</script>
+</body>
+</html>

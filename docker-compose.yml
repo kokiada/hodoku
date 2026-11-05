@@ -1,0 +1,65 @@
+# 本番最小構成: app + PostgreSQL。小さな VPS 1台で動かすことを想定。
+# 使い方: `.env.example` を `.env` にコピーして値を埋め、`docker compose up -d --build`。
+# TLS 終端（https）は前段のリバースプロキシ（Caddy/Nginx 等）で行う想定。
+
+# ログは json-file ドライバをローテーション（1ファイル10MB×3）。小さなVPSでディスクが埋まるのを防ぐ。
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    logging: *default-logging
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-hodoku}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD を .env に設定してください}
+      POSTGRES_DB: ${POSTGRES_DB:-hodoku}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hodoku} -d ${POSTGRES_DB:-hodoku}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # DB はホストに公開しない（app からの内部ネットワーク経由のみ）
+    expose:
+      - "5432"
+
+  app:
+    build:
+      context: .
+    restart: unless-stopped
+    logging: *default-logging
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: "3000"
+      # app → db はサービス名 db で名前解決される
+      DATABASE_URL: postgres://${POSTGRES_USER:-hodoku}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-hodoku}
+      BASE_URL: ${BASE_URL:?本番は https:// の BASE_URL が必須です}
+      SESSION_SECRET: ${SESSION_SECRET:?32文字以上の SESSION_SECRET が必須です}
+      TRUST_PROXY: ${TRUST_PROXY:-true}
+      SMTP_HOST: ${SMTP_HOST:?SMTP_HOST が必須です}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:?MAIL_FROM（差出人）が必須です}
+      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-disabled}
+      PAYOUTS_ENABLED: ${PAYOUTS_ENABLED:-false}
+      PLATFORM_FEE_PERCENT: ${PLATFORM_FEE_PERCENT:-10}
+      MIN_PAYOUT_YEN: ${MIN_PAYOUT_YEN:-1000}
+      REFUND_WINDOW_HOURS: ${REFUND_WINDOW_HOURS:-72}
+    # 前段のリバースプロキシからのみ受ける場合は 127.0.0.1 に絞る
+    ports:
+      - "${APP_BIND:-127.0.0.1}:3000:3000"
+
+volumes:
+  pgdata:
