@@ -35,6 +35,9 @@ jobs:
       - name: Production build
         run: npm run build:prod
 
+      - name: Preflight (本番設定ガードの点検)
+        run: npm run preflight
+
       - name: Smoke test (起動して主要ページ・APIを確認)
         run: npm run smoke
 

@@ -77,6 +77,24 @@ describe('人からさがす（担当者一覧）', () => {
   });
 });
 
+describe('削除・訂正の依頼', () => {
+  it('必須項目がそろえば受付され、監査ログに記録される', async () => {
+    const c = new Client(ctx.app);
+    const res = await c.post('/api/removal-request', { url: 'https://example.com/therapist?slug=kai', kind: 'rights', email: 'who@example.com', detail: '権利侵害の申し立て' });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({ ok: true });
+    const row = (await ctx.db.query<{ action: string; target: string }>(`SELECT action, target FROM audit_log WHERE action='removal_request' ORDER BY at DESC LIMIT 1`)).rows[0]!;
+    expect(row.action).toBe('removal_request');
+    expect(row.target).toContain('slug=kai');
+  });
+
+  it('不正な入力（URLでない・種別不正）は400', async () => {
+    const c = new Client(ctx.app);
+    expect((await c.post('/api/removal-request', { url: 'not-a-url', kind: 'rights', email: 'a@example.com', detail: 'x' })).statusCode).toBe(400);
+    expect((await c.post('/api/removal-request', { url: 'https://example.com/x', kind: 'bogus', email: 'a@example.com', detail: 'x' })).statusCode).toBe(400);
+  });
+});
+
 describe('口コミ投稿と担当者ページ', () => {
   const freeBody = {
     therapistSlug: 'kai', visitedWhen: 'this_month', courseMinutes: 90, ngPrecheck: 'on_booking', totalMatched: 'matched',

@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { optionalUser } from '../auth/guard.js';
+import { rateKey } from '../lib/rate-key.js';
 
 const minutes = z.coerce.number().refine((n): n is 60 | 90 | 120 => [60, 90, 120].includes(n)).default(90);
 const listQuery = z.object({
@@ -49,5 +50,21 @@ export async function registerCatalogRoutes(app: FastifyInstance) {
     const data = await reviews.listForTherapist(slug, await optionalUser(req));
     if (!data) return reply.code(404).send({ error: 'not_found', message: '担当者が見つかりません' });
     return data;
+  });
+
+  // 削除・訂正の依頼（情報流通プラットフォーム対処法の受付）。追記専用の監査ログに記録する。
+  app.post('/removal-request', { config: { rateLimit: { max: 10, timeWindow: '1 hour', keyGenerator: rateKey } } }, async (req) => {
+    const body = z.object({
+      url: z.string().url().max(2000),
+      kind: z.enum(['factual', 'rights', 'other']),
+      email: z.string().email().max(200),
+      detail: z.string().min(1).max(2000),
+    }).parse(req.body);
+    const user = await optionalUser(req);
+    await app.deps.db.query(
+      `INSERT INTO audit_log (actor_id, action, target, detail) VALUES ($1,'removal_request',$2,$3)`,
+      [user?.id ?? null, body.url, JSON.stringify({ kind: body.kind, email: body.email, detail: body.detail })],
+    );
+    return { ok: true };
   });
 }

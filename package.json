@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "migrate": "tsx src/db/migrate-cli.ts",
     "smoke": "tsx test/smoke.mts",
+    "preflight": "tsx scripts/preflight.mjs",
     "e2e:auth": "tsx test/e2e-phase1.mts",
     "e2e:flow": "tsx test/e2e-phase4.mts"
   },
