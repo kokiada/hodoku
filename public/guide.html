@@ -63,11 +63,11 @@
   <button class="menu" aria-label="メニュー" type="button"><span></span></button>
 </header>
 
-<main class="wrap"><article class="article" id="art">
+<main class="wrap"><article class="article unlocked" id="art">
   <ol class="crumb"><li><a href="index.html">トップ</a></li><li><a href="index.html#guides">ガイド</a></li><li>困ったときの相談先</li></ol>
   <div class="hero-img tex night" role="img" aria-label="窓越しの夜景と、にじむ街の灯り"><span class="cap">写真：窓越しの夜景（イメージ）</span></div>
   <h1>困ったときに、相談できる先と手順</h1>
-  <div class="byline"><span class="tag">会員向け</span><span>Hodoku編集部</span><span>2026年10月</span><span>8分で読めます</span></div>
+  <div class="byline"><span class="tag">無料</span><span>Hodoku編集部</span><span>2026年10月</span><span>8分で読めます</span></div>
 
   <nav class="toc" aria-label="目次"><b>この記事の内容</b>
     <ol><li>まず、その場でできること</li><li>店舗の窓口に伝えること</li><li class="l">店舗が応じないときの相談先</li><li class="l">記録の残し方と、伝える文例</li></ol>
@@ -83,20 +83,8 @@
 
   <div class="more body">
     <h2>店舗が応じないときの相談先</h2>
-    <p>（会員向けの本文。モックでは省略しています。）</p>
+    <p>無理に進めず、まずは安全を優先してください。消費生活センター（188）、警察相談専用電話（#9110）など、状況に応じた公的な相談窓口があります。やり取りの記録（日時・連絡手段・内容）を残しておくと相談がスムーズです。困ったときは運営の相談窓口にもご連絡ください。</p>
   </div>
-
-  <section class="pay on-dark" aria-labelledby="h-pay">
-    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="#E7B8BE" stroke-width="1.2" aria-hidden="true" style="margin:0 auto;display:block"><rect x="2.5" y="7" width="11" height="7.5" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>
-    <h2 id="h-pay">この続きは、会員の方へ</h2>
-    <p class="rest">残り約5,200字・相談先の一覧と連絡の文例つき</p>
-    <div class="plan"><span><b>プレミアム</b><small>すべてのガイドと、店舗・担当者の詳しいデータ。いつでも解約できます。</small></span><span class="p">¥1,480<small>／月</small></span></div>
-    <div class="btns">
-      <a class="btn primary" href="membership.html">会員になって続きを読む</a>
-      <button class="btn quiet" type="button" id="buy">この記事だけ購入 ¥300</button>
-    </div>
-    <p class="fine">金額は仮のサンプルです。明細には「Hodoku」と表示されます（決済代行会社に確認中）。<br><a href="membership.html#signup">すでに会員の方はログイン</a></p>
-  </section>
 
   <section class="related" aria-labelledby="h-rel">
     <h2 id="h-rel">あわせて読みたい</h2>
@@ -114,11 +102,5 @@
   </div>
 </div></footer>
 <script src="assets/hodoku.js"></script>
-<script>
-document.getElementById('buy').addEventListener('click', e => {
-  const b = e.currentTarget; b.disabled = true; b.textContent = '処理しています…';
-  setTimeout(() => { document.getElementById('art').classList.add('unlocked'); hodokuToast('購入しました。続きを表示しています（モック）'); }, 900);
-});
-</script>
 </body>
 </html>

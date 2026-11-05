@@ -1,4 +1,5 @@
 import Fastify, { type FastifyInstance } from 'fastify';
+import { randomBytes } from 'node:crypto';
 import cookie from '@fastify/cookie';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
@@ -40,28 +41,35 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     bodyLimit: 64 * 1024,
   });
 
+  // per-request のスクリプト nonce を用意し、CSP ヘッダを自前で付与する。
+  // helmet の CSP は使わない（helmet は script/style 両方に nonce を足す実装で、style に nonce が付くと
+  // ブラウザが 'unsafe-inline' を無視して全インラインstyleが無効化＝レイアウト崩壊するため）。
+  // style は 'unsafe-inline' を維持、script だけ nonce 化して 'unsafe-inline' を外す。
+  app.decorateRequest('scriptNonce', '');
+  app.addHook('onRequest', async (req, reply) => {
+    const nonce = randomBytes(16).toString('base64');
+    (req as unknown as { scriptNonce: string }).scriptNonce = nonce;
+    const csp = [
+      "default-src 'self'",
+      "img-src 'self' data:",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com",
+      `script-src 'self' 'nonce-${nonce}'`,
+      "script-src-attr 'none'",
+      "connect-src 'self'",
+      "frame-ancestors 'none'",
+      "frame-src 'none'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      ...(config.isProd ? ['upgrade-insecure-requests'] : []),
+    ].join('; ');
+    reply.header('Content-Security-Policy', csp);
+  });
+
   await app.register(helmet, {
-    // スクリプトは per-request nonce を使い、script-src から 'unsafe-inline' を外す（XSSの主要経路を塞ぐ）
-    enableCSPNonces: true,
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        imgSrc: ["'self'", 'data:'],
-        // style は inline style 属性(style="...")が多数あり nonce で代替できないため 'unsafe-inline' を維持
-        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-        // 'unsafe-inline' は付けない。helmet が per-request の 'nonce-...' を自動付与する
-        scriptSrc: ["'self'"],
-        connectSrc: ["'self'"],
-        frameAncestors: ["'none'"],
-        frameSrc: ["'none'"],
-        objectSrc: ["'none'"],
-        baseUri: ["'self'"],
-        formAction: ["'self'"],
-        // 本番(HTTPS)のみhttpをhttpsへ昇格。開発・テスト(http)で有効にすると自サイトの読み込みが失敗する
-        upgradeInsecureRequests: config.isProd ? [] : null,
-      },
-    },
+    // CSP は上のフックで自前付与するので helmet 側は無効化。他のセキュリティヘッダは helmet に任せる。
+    contentSecurityPolicy: false,
     strictTransportSecurity: config.isProd ? { maxAge: 31536000, includeSubDomains: true } : false,
     referrerPolicy: { policy: 'same-origin' },
   });

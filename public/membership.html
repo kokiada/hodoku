@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Hodoku｜会員登録と料金</title>
+<title>Hodoku｜会員登録（無料）</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -29,6 +29,10 @@
 .single b{font-weight:500}
 
 .signup{margin-top:56px}
+.can{list-style:none;display:grid;gap:8px;margin-top:16px}
+.can li{padding-left:16px;position:relative;font-size:14px;line-height:1.9}
+.can li::before{content:"";position:absolute;left:0;top:.9em;width:8px;height:8px;border-radius:50%;background:var(--suou)}
+.free-note{font-size:13px;color:var(--fuji-ink);margin-top:4px}
 .plan-pick{display:grid;gap:8px;margin-top:20px;border:0!important}
 .plan-pick .opt-row{border:1px solid var(--suna);border-radius:14px;padding:14px 16px;background:var(--kinu)}
 .plan-pick .opt-rows{border:0;display:grid;gap:8px}
@@ -73,53 +77,31 @@ body.sent #sf{display:none}body.sent .done{display:block}
 
 <main class="wrap">
   <div class="page-head">
-    <h1>会員登録と料金</h1>
-    <p>登録はメールアドレスとニックネームだけ。本名や電話番号はうかがいません。いつでも解約できます。有料の口コミを販売すると、代金の90%を受け取れます。</p>
+    <h1>会員登録（無料）</h1>
+    <p>登録はメールアドレスとニックネームだけ。本名や電話番号はうかがいません。月額料金はありません。読みたい有料の口コミだけを、ポイントで1件ずつ購入できます。</p>
   </div>
 
   <div class="layout">
-    <section aria-labelledby="h-plan">
-      <h2 class="h2" id="h-plan">プランでできること</h2>
-      <table class="ptable">
-        <caption>料金は税込・仮のサンプルです。月額2段階にするかは未決です。</caption>
-        <colgroup><col><col><col><col class="sel"></colgroup>
-        <thead><tr>
-          <th scope="col"><span class="vh">機能</span></th>
-          <th scope="col"><span class="pn">無料</span><span class="pp">¥0</span></th>
-          <th scope="col"><span class="pn">スタンダード</span><span class="pp">¥980<small>／月</small></span></th>
-          <th scope="col"><span class="rec">おすすめ</span><span class="pn">プレミアム</span><span class="pp">¥1,480<small>／月</small></span></th>
-        </tr></thead>
-        <tbody>
-          <tr><th scope="row">無料の口コミの閲覧・投稿</th><td><span class="yes" aria-label="あり"></span></td><td><span class="yes" aria-label="あり"></span></td><td><span class="yes" aria-label="あり"></span></td></tr>
-          <tr><th scope="row">有料の口コミの出品（販売）</th><td><span class="yes" aria-label="あり"></span></td><td><span class="yes" aria-label="あり"></span></td><td><span class="yes" aria-label="あり"></span></td></tr>
-          <tr><th scope="row">店舗の総額・規定</th><td><span class="yes" aria-label="あり"></span></td><td><span class="yes" aria-label="あり"></span></td><td><span class="yes" aria-label="あり"></span></td></tr>
-          <tr><th scope="row">総額・規定の比較表</th><td><span class="no" aria-label="なし"></span></td><td><span class="yes" aria-label="あり"></span></td><td><span class="yes" aria-label="あり"></span></td></tr>
-          <tr><th scope="row">会員向けガイドの全文</th><td><span class="no" aria-label="なし"></span></td><td><span class="no" aria-label="なし"></span></td><td><span class="yes" aria-label="あり"></span></td></tr>
-          <tr><th scope="row">担当者ごとの詳しいデータ</th><td><span class="no" aria-label="なし"></span></td><td><span class="no" aria-label="なし"></span></td><td><span class="yes" aria-label="あり"></span></td></tr>
-        </tbody>
-      </table>
-      <p class="single"><b>口コミは1件ずつ購入します</b>：有料の口コミは会員プランに関係なく、読みたい1件だけを購入します（¥100〜¥500・仮）。販売は運営が行い、代金の90%が投稿者に、10%が運営の手数料になります。ガイド記事も1本 ¥300（仮）から単品購入できます。</p>
-      <div class="memo legal" style="margin-top:16px"><b>要確認（弁護士・決済代行）</b>特商法の表示（販売者＝運営・解約・返金・支払時期）、自動更新の表示、口コミ販売の手数料と投稿者への支払い、決済審査の可否。</div>
+    <section aria-labelledby="h-can">
+      <h2 class="h2" id="h-can">会員でできること</h2>
+      <ul class="can">
+        <li>口コミ・比較情報を読む（無料）</li>
+        <li>口コミを投稿する（無料）</li>
+        <li>有料の口コミを、読みたい1件だけポイントで解放して全文を読む</li>
+      </ul>
+      <p class="single"><b>月額料金はありません。</b>有料の口コミは、読みたい1件ごとの購入（単品）です。ポイントをチャージし、1件ずつ解放します。購入しない限り料金はかかりません。</p>
+      <div class="memo legal" style="margin-top:16px"><b>要確認（弁護士・決済代行）</b>有料機能の提供開始時に、特商法の表示（販売者＝運営・返金・支払時期）と、ポイント（前払式支払手段）の資金決済法上の扱いを確認。現在チャージ・購入は準備中。</div>
     </section>
 
     <section class="signup" id="signup" aria-labelledby="h-sign">
       <form id="sf" novalidate>
         <h2 class="h2" id="h-sign">アカウントをつくる</h2>
-        <div class="plan-pick opt-rows" role="radiogroup" aria-label="プラン">
-          <label class="opt-row"><input type="radio" name="plan" value="free"><span>無料</span><span class="pr">¥0</span></label>
-          <label class="opt-row"><input type="radio" name="plan" value="std"><span>スタンダード</span><span class="pr">¥980／月</span></label>
-          <label class="opt-row"><input type="radio" name="plan" value="pre" checked><span>プレミアム</span><span class="pr">¥1,480／月</span></label>
-        </div>
+        <p class="free-note">登録は無料です。</p>
 
         <div class="fields">
           <div><label class="field-l" for="em">メールアドレス<span class="req">必須</span></label><input class="input" id="em" type="email" autocomplete="email" placeholder="name@example.com" required aria-describedby="em-e"><p class="err" id="em-e"></p></div>
           <div><label class="field-l" for="nn">ニックネーム<span class="opt">口コミに表示されます</span></label><input class="input" id="nn" autocomplete="nickname" placeholder="本名は使わないでください" required aria-describedby="nn-e"><p class="err" id="nn-e"></p></div>
           <div><label class="field-l" for="pw">パスワード<span class="req">必須</span></label><div class="pw"><input class="input" id="pw" type="password" autocomplete="new-password" minlength="8" required aria-describedby="pw-h pw-e"><button type="button" aria-controls="pw" id="pwt">表示</button></div><p class="help" id="pw-h">8文字以上</p><p class="err" id="pw-e"></p></div>
-          <div class="pay-methods" id="pm"><fieldset><legend>お支払い方法</legend>
-            <div class="opt-rows">
-              <label class="opt-row"><input type="radio" name="pay" checked><span>クレジットカード<small>明細には「Hodoku」と表示（予定）</small></span></label>
-              <label class="opt-row"><input type="radio" name="pay"><span>BitCash<small>プリペイド型の電子マネー</small></span></label>
-            </div></fieldset></div>
         </div>
 
         <div class="privacy">
@@ -132,7 +114,7 @@ body.sent #sf{display:none}body.sent .done{display:block}
         </div>
         <p class="agree">登録すると、<a href="legal.html#terms">利用規約</a>・<a href="legal.html#privacy">プライバシーポリシー</a>に同意したものとみなします。本サービスは18歳以上の方が対象です。</p>
         <div class="submit">
-          <button class="btn primary" type="submit" id="go">プレミアムで登録する</button>
+          <button class="btn primary" type="submit" id="go">無料で登録する</button>
         </div>
       </form>
       <div class="done" role="status" tabindex="-1" id="done">
@@ -154,10 +136,7 @@ body.sent #sf{display:none}body.sent .done{display:block}
 <script src="assets/hodoku.js"></script>
 <script>
 (() => {
-  const f = document.getElementById('sf'), go = document.getElementById('go'), pm = document.getElementById('pm');
-  const names = {free: '無料で登録する', std: 'スタンダードで登録する', pre: 'プレミアムで登録する'};
-  const upd = () => { const v = f.plan.value; go.textContent = names[v]; pm.hidden = v === 'free'; };
-  f.addEventListener('change', e => { if (e.target.name === 'plan') upd(); });
+  const f = document.getElementById('sf'), go = document.getElementById('go');
   document.getElementById('pwt').addEventListener('click', e => {
     const i = document.getElementById('pw'), show = i.type === 'password';
     i.type = show ? 'text' : 'password'; e.currentTarget.textContent = show ? '隠す' : '表示';
@@ -177,7 +156,7 @@ body.sent #sf{display:none}body.sent .done{display:block}
     hodokuApi('/auth/register', {body: {email: em, nickname: nn, password: pw}})
       .then(() => { document.body.classList.add('sent'); document.getElementById('done').focus(); })
       .catch(err => {
-        go.disabled = false; upd();
+        go.disabled = false; go.textContent = '無料で登録する';
         if (err.code === 'email_taken') check('em', false, 'このメールアドレスは既に登録されています');
         else if (err.code === 'nickname_taken' || err.code === 'unsafe_nickname') check('nn', false, err.message);
         else if (err.code === 'weak_password') check('pw', false, err.message);
@@ -185,7 +164,6 @@ body.sent #sf{display:none}body.sent .done{display:block}
       });
   });
   ['em', 'nn', 'pw'].forEach(id => document.getElementById(id).addEventListener('input', e => { if (e.target.getAttribute('aria-invalid') === 'true') { e.target.removeAttribute('aria-invalid'); document.getElementById(id + '-e').textContent = ''; } }));
-  upd();
 })();
 </script>
 </body>

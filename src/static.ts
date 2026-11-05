@@ -71,7 +71,7 @@ export async function registerStatic(app: FastifyInstance, publicDir: string): P
       if (NOINDEX.has(name)) reply.header('X-Robots-Tag', 'noindex, nofollow');
       reply.type(type);
       // CSP: インラインの <script> に per-request の nonce を付与する（script-src から 'unsafe-inline' を外しているため）
-      const nonce = reply.cspNonce?.script;
+      const nonce = (req as unknown as { scriptNonce?: string }).scriptNonce;
       const html = await readFile(abs, 'utf8');
       return nonce ? html.replaceAll('<script>', `<script nonce="${nonce}">`) : html;
     }
